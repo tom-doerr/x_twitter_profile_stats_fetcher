@@ -16,13 +16,9 @@ def calculate_follower_growth(csv_file):
     data.sort(key=lambda x: x[0])  # Sort by timestamp
 
     growth_rates = []
-    for i in range(len(data)):
+    for i in range(len(data) - 1):  # Stop at the second-to-last data point
         start_time, start_followers = data[i]
-        end_time = start_time + timedelta(hours=1)
-
-        # Find the closest data point to one hour later
-        closest_end = min((t for t in data if t[0] > start_time), key=lambda x: abs(x[0] - end_time))
-        end_time, end_followers = closest_end
+        end_time, end_followers = data[i + 1]  # Use the next data point
 
         time_diff = (end_time - start_time).total_seconds() / 3600  # Convert to hours
         follower_diff = end_followers - start_followers
