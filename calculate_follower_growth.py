@@ -32,13 +32,15 @@ def calculate_growth_stats(csv_file):
     hourly_diff, hourly_rate = calculate_stats(1)
     six_hour_diff, six_hour_rate = calculate_stats(6)
     daily_diff, daily_rate = calculate_stats(24)
+    weekly_diff, weekly_rate = calculate_stats(24 * 7)
 
     return {
         'current_time': current_time,
         'current_followers': current_followers,
         'hourly': {'diff': hourly_diff, 'rate': hourly_rate},
         'six_hour': {'diff': six_hour_diff, 'rate': six_hour_rate},
-        'daily': {'diff': daily_diff, 'rate': daily_rate}
+        'daily': {'diff': daily_diff, 'rate': daily_rate},
+        'weekly': {'diff': weekly_diff, 'rate': weekly_rate}
     }
 
 def main():
@@ -61,6 +63,9 @@ def main():
             print("\n24-hour Growth:")
             print(f"  New Followers: {stats['daily']['diff']}")
             print(f"  Growth Rate: {stats['daily']['rate']:.2f} followers/day")
+            print("\n7-day Growth:")
+            print(f"  New Followers: {stats['weekly']['diff']}")
+            print(f"  Growth Rate: {stats['weekly']['rate']:.2f} followers/day")
     except FileNotFoundError:
         print(f"Error: The file '{csv_file}' was not found.")
     except ValueError as e:
