@@ -4,7 +4,6 @@ import time
 from datetime import datetime, timedelta
 from colorama import init, Fore, Style
 from tabulate import tabulate
-import matplotlib.pyplot as plt
 
 init(autoreset=True)  # Initialize colorama
 
@@ -142,25 +141,19 @@ def plot_daily_gains(account_name):
 
     daily_gains = calculate_daily_gains(data)
 
-    dates = [gain[0] for gain in daily_gains]
-    gains = [gain[1] for gain in daily_gains]
+    print(f"\n{Fore.CYAN}Daily Follower Gains for {account_name}:")
+    print(f"{Fore.CYAN}{'Date':<12} {'Gain':<8} {'Chart'}")
+    print(f"{Fore.CYAN}{'-'*40}")
 
-    plt.figure(figsize=(12, 6))
-    bars = plt.bar(dates, gains, color='skyblue', edgecolor='navy')
-    plt.title(f'Daily Follower Gains for {account_name}', fontsize=16)
-    plt.xlabel('Date', fontsize=12)
-    plt.ylabel('Followers Gained', fontsize=12)
-    plt.xticks(rotation=45, ha='right')
+    max_gain = max(gain for _, gain in daily_gains)
+    scale_factor = 20 / max_gain if max_gain > 0 else 1
 
-    # Add value labels on top of each bar
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2., height,
-                 f'{int(height)}',
-                 ha='center', va='bottom')
+    for date, gain in daily_gains:
+        bar_length = int(gain * scale_factor)
+        bar = '█' * bar_length
+        print(f"{Fore.YELLOW}{date.strftime('%Y-%m-%d'):<12} {Fore.GREEN}{gain:<8} {Fore.BLUE}{bar}")
 
-    plt.tight_layout()
-    plt.show()
+    print()
 
 if __name__ == "__main__":
     main()
