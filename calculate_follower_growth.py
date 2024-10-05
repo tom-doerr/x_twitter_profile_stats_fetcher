@@ -8,7 +8,7 @@ def calculate_follower_growth(csv_file):
         timestamp_key = next(key for key in reader.fieldnames if 'time' in key.lower())
         followers_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
         for row in reader:
-            timestamp = datetime.strptime(row[timestamp_key], '%Y-%m-%d %H:%M:%S')
+            timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
             followers = int(row[followers_key])
             data.append((timestamp, followers))
 
