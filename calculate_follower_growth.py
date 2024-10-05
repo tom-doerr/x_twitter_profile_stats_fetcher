@@ -68,10 +68,10 @@ def main():
 
             table_data = [
                 ["Period", "New Followers", "Growth Rate (followers/day)"],
-                ["1-hour", stats['hourly']['diff'], f"{stats['hourly']['rate']:.2f}"],
-                ["6-hour", stats['six_hour']['diff'], f"{stats['six_hour']['rate']:.2f}"],
-                ["24-hour", stats['daily']['diff'], f"{stats['daily']['rate']:.2f}"],
-                ["7-day", stats['weekly']['diff'], f"{stats['weekly']['rate']:.2f}"]
+                ["1-hour", stats['hourly']['diff'], f"{int(stats['hourly']['rate'])}"],
+                ["6-hour", stats['six_hour']['diff'], f"{int(stats['six_hour']['rate'])}"],
+                ["24-hour", stats['daily']['diff'], f"{int(stats['daily']['rate'])}"],
+                ["7-day", stats['weekly']['diff'], f"{int(stats['weekly']['rate'])}"]
             ]
 
             table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
