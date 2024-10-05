@@ -9,8 +9,9 @@ def calculate_follower_growth(csv_file):
         followers_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
         for row in reader:
             timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
-            followers = int(row[followers_key])
-            data.append((timestamp, followers))
+            followers = row[followers_key]
+            if followers != 'N/A':
+                data.append((timestamp, int(followers)))
 
     data.sort(key=lambda x: x[0])  # Sort by timestamp
 
