@@ -5,9 +5,11 @@ def calculate_follower_growth(csv_file):
     data = []
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
+        timestamp_key = next(key for key in reader.fieldnames if 'time' in key.lower())
+        followers_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
         for row in reader:
-            timestamp = datetime.strptime(row['timestamp'], '%Y-%m-%d %H:%M:%S')
-            followers = int(row['followers'])
+            timestamp = datetime.strptime(row[timestamp_key], '%Y-%m-%d %H:%M:%S')
+            followers = int(row[followers_key])
             data.append((timestamp, followers))
 
     data.sort(key=lambda x: x[0])  # Sort by timestamp
@@ -31,13 +33,20 @@ def calculate_follower_growth(csv_file):
 
 def main():
     csv_file = 'tom_doerr_stats.csv'
-    growth_rates = calculate_follower_growth(csv_file)
+    try:
+        growth_rates = calculate_follower_growth(csv_file)
 
-    print(f"Follower Growth Rates for {csv_file}:")
-    print("Timestamp               | Hourly Growth Rate")
-    print("-" * 45)
-    for timestamp, rate in growth_rates:
-        print(f"{timestamp:%Y-%m-%d %H:%M:%S} | {rate:.2f}")
+        print(f"Follower Growth Rates for {csv_file}:")
+        print("Timestamp               | Hourly Growth Rate")
+        print("-" * 45)
+        for timestamp, rate in growth_rates:
+            print(f"{timestamp:%Y-%m-%d %H:%M:%S} | {rate:.2f}")
+    except FileNotFoundError:
+        print(f"Error: The file '{csv_file}' was not found.")
+    except ValueError as e:
+        print(f"Error: {str(e)}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
 
 if __name__ == "__main__":
     main()
