@@ -1,10 +1,16 @@
 import csv
 import sys
 from datetime import datetime, timedelta
-from colorama import init, Fore, Style
+from colorama import init, Fore, Style, Back
 from tabulate import tabulate
 
 init(autoreset=True)  # Initialize colorama
+
+# Emoji constants
+CHART_EMOJI = "📊"
+CLOCK_EMOJI = "🕒"
+PERSON_EMOJI = "👤"
+ROCKET_EMOJI = "🚀"
 
 def calculate_growth_stats(account_name):
     csv_file = f'{account_name}_stats.csv'
@@ -61,21 +67,22 @@ def main():
         if stats is None:
             print(f"{Fore.RED}Not enough data to calculate growth statistics.")
         else:
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Follower Growth Statistics for {account_name}")
-            print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
-            print(f"{Fore.GREEN}Current Fol: {Style.BRIGHT}{stats['current_fol']}")
+            print(f"\n{Back.MAGENTA}{Fore.WHITE}{Style.BRIGHT} {CHART_EMOJI} Follower Growth Statistics for {account_name} {Style.RESET_ALL}")
+            print(f"{Fore.BLUE}{CLOCK_EMOJI} Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
+            print(f"{Fore.GREEN}{PERSON_EMOJI} Current Fol: {Style.BRIGHT}{stats['current_fol']:,}")
             print()
 
             table_data = [
                 ["Period", "NF", "GR (fol/day)", "GR (fol/week)"],
-                ["1-hour", stats['hourly']['diff'], f"{int(stats['hourly']['rate'])}", f"{int(stats['hourly']['rate'] * 7)}"],
-                ["6-hour", stats['six_hour']['diff'], f"{int(stats['six_hour']['rate'])}", f"{int(stats['six_hour']['rate'] * 7)}"],
-                ["24-hour", stats['daily']['diff'], f"{int(stats['daily']['rate'])}", f"{int(stats['daily']['rate'] * 7)}"],
-                ["7-day", stats['weekly']['diff'], f"{int(stats['weekly']['rate'])}", f"{int(stats['weekly']['rate'] * 7)}"]
+                ["1-hour", f"{stats['hourly']['diff']:,}", f"{int(stats['hourly']['rate']):,}", f"{int(stats['hourly']['rate'] * 7):,}"],
+                ["6-hour", f"{stats['six_hour']['diff']:,}", f"{int(stats['six_hour']['rate']):,}", f"{int(stats['six_hour']['rate'] * 7):,}"],
+                ["24-hour", f"{stats['daily']['diff']:,}", f"{int(stats['daily']['rate']):,}", f"{int(stats['daily']['rate'] * 7):,}"],
+                ["7-day", f"{stats['weekly']['diff']:,}", f"{int(stats['weekly']['rate']):,}", f"{int(stats['weekly']['rate'] * 7):,}"]
             ]
 
             table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
-            print(Fore.CYAN + table)
+            print(f"{Fore.CYAN}{table}")
+            print(f"\n{Fore.YELLOW}{ROCKET_EMOJI} Keep growing! {ROCKET_EMOJI}")
     except FileNotFoundError:
         print(f"{Fore.RED}Error: The file '{account_name}_stats.csv' was not found.")
     except ValueError as e:
