@@ -12,28 +12,28 @@ def calculate_growth_stats(account_name):
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         timestamp_key = next(key for key in reader.fieldnames if 'time' in key.lower())
-        followers_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
+        fol_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
         for row in reader:
             timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
-            followers = row[followers_key]
-            if followers != 'N/A':
-                data.append((timestamp, int(followers)))
+            fol = row[fol_key]
+            if fol != 'N/A':
+                data.append((timestamp, int(fol)))
 
     if len(data) < 2:
         return None
 
     data.sort(key=lambda x: x[0], reverse=True)  # Sort by timestamp, most recent first
 
-    current_time, current_followers = data[0]
+    current_time, current_fol = data[0]
     
     def calculate_stats(hours):
         target_time = current_time - timedelta(hours=hours)
         closest_past = min(data[1:], key=lambda x: abs(x[0] - target_time))
-        past_time, past_followers = closest_past
+        past_time, past_fol = closest_past
         time_diff = (current_time - past_time).total_seconds() / 86400  # Convert to days
-        follower_diff = current_followers - past_followers
-        growth_rate = follower_diff / time_diff
-        return int(follower_diff), growth_rate
+        fol_diff = current_fol - past_fol
+        growth_rate = fol_diff / time_diff
+        return int(fol_diff), growth_rate
 
     hourly_diff, hourly_rate = calculate_stats(1)
     six_hour_diff, six_hour_rate = calculate_stats(6)
@@ -42,7 +42,7 @@ def calculate_growth_stats(account_name):
 
     return {
         'current_time': current_time,
-        'current_followers': current_followers,
+        'current_fol': current_fol,
         'hourly': {'diff': hourly_diff, 'rate': hourly_rate},
         'six_hour': {'diff': six_hour_diff, 'rate': six_hour_rate},
         'daily': {'diff': daily_diff, 'rate': daily_rate},
@@ -63,11 +63,11 @@ def main():
         else:
             print(f"{Fore.MAGENTA}{Style.BRIGHT}Follower Growth Statistics for {account_name}")
             print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
-            print(f"{Fore.GREEN}Current Followers: {Style.BRIGHT}{stats['current_followers']}")
+            print(f"{Fore.GREEN}Current Fol: {Style.BRIGHT}{stats['current_fol']}")
             print()
 
             table_data = [
-                ["Period", "NF", "GR (followers/day)", "GR (followers/week)"],
+                ["Period", "NF", "GR (fol/day)", "GR (fol/week)"],
                 ["1-hour", stats['hourly']['diff'], f"{int(stats['hourly']['rate'])}", f"{int(stats['hourly']['rate'] * 7)}"],
                 ["6-hour", stats['six_hour']['diff'], f"{int(stats['six_hour']['rate'])}", f"{int(stats['six_hour']['rate'] * 7)}"],
                 ["24-hour", stats['daily']['diff'], f"{int(stats['daily']['rate'])}", f"{int(stats['daily']['rate'] * 7)}"],
