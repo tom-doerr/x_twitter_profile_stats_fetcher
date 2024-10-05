@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime, timedelta
 
-def calculate_current_growth(csv_file):
+def calculate_growth_rates(csv_file):
     data = []
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
@@ -14,34 +14,40 @@ def calculate_current_growth(csv_file):
                 data.append((timestamp, int(followers)))
 
     if len(data) < 2:
-        return None, None
+        return None, None, None, None
 
     data.sort(key=lambda x: x[0], reverse=True)  # Sort by timestamp, most recent first
 
     current_time, current_followers = data[0]
-    one_hour_ago = current_time - timedelta(hours=1)
+    
+    def calculate_rate(hours):
+        target_time = current_time - timedelta(hours=hours)
+        closest_past = min(data[1:], key=lambda x: abs(x[0] - target_time))
+        past_time, past_followers = closest_past
+        time_diff = (current_time - past_time).total_seconds() / 3600  # Convert to hours
+        follower_diff = current_followers - past_followers
+        return follower_diff / time_diff
 
-    # Find the closest data point to one hour ago
-    closest_past = min(data[1:], key=lambda x: abs(x[0] - one_hour_ago))
-    past_time, past_followers = closest_past
+    hourly_rate = calculate_rate(1)
+    six_hour_rate = calculate_rate(6)
+    daily_rate = calculate_rate(24)
 
-    time_diff = (current_time - past_time).total_seconds() / 3600  # Convert to hours
-    follower_diff = current_followers - past_followers
-    hourly_growth_rate = follower_diff / time_diff
-
-    return current_time, hourly_growth_rate
+    return current_time, hourly_rate, six_hour_rate, daily_rate
 
 def main():
     csv_file = 'tom_doerr_stats.csv'
     try:
-        current_time, growth_rate = calculate_current_growth(csv_file)
+        current_time, hourly_rate, six_hour_rate, daily_rate = calculate_growth_rates(csv_file)
 
-        if current_time is None or growth_rate is None:
-            print("Not enough data to calculate growth rate.")
+        if current_time is None:
+            print("Not enough data to calculate growth rates.")
         else:
-            print(f"Current Follower Growth Rate for {csv_file}:")
+            print(f"Follower Growth Rates for {csv_file}:")
             print(f"Timestamp: {current_time:%Y-%m-%d %H:%M:%S}")
-            print(f"Hourly Growth Rate: {growth_rate:.2f}")
+            print(f"1-hour Growth Rate: {hourly_rate:.2f}")
+            print(f"6-hour Growth Rate: {six_hour_rate:.2f}")
+            print(f"24-hour Growth Rate: {daily_rate:.2f}")
+            print(f"Projected 24-hour growth at current rate: {hourly_rate * 24:.2f}")
     except FileNotFoundError:
         print(f"Error: The file '{csv_file}' was not found.")
     except ValueError as e:
