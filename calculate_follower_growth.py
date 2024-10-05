@@ -4,8 +4,25 @@ import time
 from datetime import datetime, timedelta
 from colorama import init, Fore, Style
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 
 init(autoreset=True)  # Initialize colorama
+
+def calculate_daily_gains(data, days=7):
+    daily_gains = []
+    for i in range(days):
+        end_date = datetime.now().date() - timedelta(days=i)
+        start_date = end_date - timedelta(days=1)
+        
+        end_followers = next((fol for date, fol in data if date.date() == end_date), None)
+        start_followers = next((fol for date, fol in data if date.date() == start_date), None)
+        
+        if end_followers is not None and start_followers is not None:
+            daily_gains.append((end_date, end_followers - start_followers))
+        else:
+            daily_gains.append((end_date, 0))
+    
+    return daily_gains[::-1]  # Reverse the list to have oldest date first
 
 def calculate_growth_stats(account_name):
     csv_file = f'{account_name}_stats.csv'
@@ -67,18 +84,19 @@ def display_stats(stats):
     print(f"{Fore.CYAN}{table}")
 
 def main():
-    if len(sys.argv) < 2 or len(sys.argv) > 4:
-        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds]")
+    if len(sys.argv) < 2 or len(sys.argv) > 5:
+        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds] [--plot]")
         sys.exit(1)
 
     account_name = sys.argv[1]
     refresh_mode = "--refresh" in sys.argv
+    plot_mode = "--plot" in sys.argv
     interval = 60  # Default interval
 
-    if refresh_mode and len(sys.argv) == 4:
+    if refresh_mode and len(sys.argv) >= 4:
         try:
-            interval = int(sys.argv[3])
-        except ValueError:
+            interval = int(sys.argv[sys.argv.index("--refresh") + 1])
+        except (ValueError, IndexError):
             print(f"{Fore.RED}Error: Invalid interval. Using default of 60 seconds.")
 
     try:
@@ -91,6 +109,9 @@ def main():
                 # Clear the console (works for both Windows and Unix-like systems)
                 print("\033[H\033[J", end="")
                 display_stats(stats)
+
+                if plot_mode:
+                    plot_daily_gains(account_name)
 
             if not refresh_mode:
                 break
@@ -105,6 +126,41 @@ def main():
         print(f"\n{Fore.YELLOW}Refresh mode stopped.")
     except Exception as e:
         print(f"{Fore.RED}An unexpected error occurred: {str(e)}")
+
+def plot_daily_gains(account_name):
+    csv_file = f'{account_name}_stats.csv'
+    data = []
+    with open(csv_file, 'r') as file:
+        reader = csv.DictReader(file)
+        timestamp_key = next(key for key in reader.fieldnames if 'time' in key.lower())
+        fol_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
+        for row in reader:
+            timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
+            fol = row[fol_key]
+            if fol != 'N/A':
+                data.append((timestamp, int(fol)))
+
+    daily_gains = calculate_daily_gains(data)
+
+    dates = [gain[0] for gain in daily_gains]
+    gains = [gain[1] for gain in daily_gains]
+
+    plt.figure(figsize=(12, 6))
+    bars = plt.bar(dates, gains, color='skyblue', edgecolor='navy')
+    plt.title(f'Daily Follower Gains for {account_name}', fontsize=16)
+    plt.xlabel('Date', fontsize=12)
+    plt.ylabel('Followers Gained', fontsize=12)
+    plt.xticks(rotation=45, ha='right')
+
+    # Add value labels on top of each bar
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                 f'{int(height)}',
+                 ha='center', va='bottom')
+
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()
