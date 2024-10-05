@@ -24,10 +24,10 @@ def calculate_growth_stats(csv_file):
         target_time = current_time - timedelta(hours=hours)
         closest_past = min(data[1:], key=lambda x: abs(x[0] - target_time))
         past_time, past_followers = closest_past
-        time_diff = (current_time - past_time).total_seconds() / 3600  # Convert to hours
+        time_diff = (current_time - past_time).total_seconds() / 86400  # Convert to days
         follower_diff = current_followers - past_followers
         growth_rate = follower_diff / time_diff
-        return follower_diff, growth_rate
+        return int(follower_diff), growth_rate
 
     hourly_diff, hourly_rate = calculate_stats(1)
     six_hour_diff, six_hour_rate = calculate_stats(6)
@@ -53,15 +53,14 @@ def main():
             print(f"Timestamp: {stats['current_time']:%Y-%m-%d %H:%M:%S}")
             print(f"Current Followers: {stats['current_followers']}")
             print("\n1-hour Growth:")
-            print(f"  New Followers: {stats['hourly']['diff']:.2f}")
-            print(f"  Growth Rate: {stats['hourly']['rate']:.2f} followers/hour")
-            print(f"  Projected 24-hour growth: {stats['hourly']['rate'] * 24:.2f}")
+            print(f"  New Followers: {stats['hourly']['diff']}")
+            print(f"  Growth Rate: {stats['hourly']['rate']:.2f} followers/day")
             print("\n6-hour Growth:")
-            print(f"  New Followers: {stats['six_hour']['diff']:.2f}")
-            print(f"  Growth Rate: {stats['six_hour']['rate']:.2f} followers/hour")
+            print(f"  New Followers: {stats['six_hour']['diff']}")
+            print(f"  Growth Rate: {stats['six_hour']['rate']:.2f} followers/day")
             print("\n24-hour Growth:")
-            print(f"  New Followers: {stats['daily']['diff']:.2f}")
-            print(f"  Growth Rate: {stats['daily']['rate']:.2f} followers/hour")
+            print(f"  New Followers: {stats['daily']['diff']}")
+            print(f"  Growth Rate: {stats['daily']['rate']:.2f} followers/day")
     except FileNotFoundError:
         print(f"Error: The file '{csv_file}' was not found.")
     except ValueError as e:
