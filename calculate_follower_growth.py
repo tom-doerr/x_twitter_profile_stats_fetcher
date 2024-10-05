@@ -1,5 +1,6 @@
 import csv
 import sys
+import time
 from datetime import datetime, timedelta
 from colorama import init, Fore, Style
 from tabulate import tabulate
@@ -49,36 +50,59 @@ def calculate_growth_stats(account_name):
         'weekly': {'diff': weekly_diff, 'rate': weekly_rate}
     }
 
+def display_stats(stats):
+    print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
+    print(f"{Fore.GREEN}Current Fol: {Style.BRIGHT}{stats['current_fol']:,}")
+    print()
+
+    table_data = [
+        ["Period", "NF", "GR (fol/day)", "GR (fol/week)"],
+        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate'] * 7):,}{Fore.CYAN}"],
+        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate'] * 7):,}{Fore.CYAN}"],
+        ["24-hour", f"{Fore.YELLOW}{stats['daily']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate'] * 7):,}{Fore.CYAN}"],
+        ["7-day", f"{Fore.YELLOW}{stats['weekly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate'] * 7):,}{Fore.CYAN}"]
+    ]
+
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(f"{Fore.CYAN}{table}")
+
 def main():
-    if len(sys.argv) != 2:
-        print(f"Usage: python {sys.argv[0]} <account_name>")
+    if len(sys.argv) < 2 or len(sys.argv) > 4:
+        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds]")
         sys.exit(1)
 
     account_name = sys.argv[1]
+    refresh_mode = "--refresh" in sys.argv
+    interval = 60  # Default interval
+
+    if refresh_mode and len(sys.argv) == 4:
+        try:
+            interval = int(sys.argv[3])
+        except ValueError:
+            print(f"{Fore.RED}Error: Invalid interval. Using default of 60 seconds.")
+
     try:
-        stats = calculate_growth_stats(account_name)
+        while True:
+            stats = calculate_growth_stats(account_name)
 
-        if stats is None:
-            print(f"{Fore.RED}Not enough data to calculate growth statistics.")
-        else:
-            print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
-            print(f"{Fore.GREEN}Current Fol: {Style.BRIGHT}{stats['current_fol']:,}")
-            print()
+            if stats is None:
+                print(f"{Fore.RED}Not enough data to calculate growth statistics.")
+            else:
+                # Clear the console (works for both Windows and Unix-like systems)
+                print("\033[H\033[J", end="")
+                display_stats(stats)
 
-            table_data = [
-                ["Period", "NF", "GR (fol/day)", "GR (fol/week)"],
-                ["1-hour", f"{Fore.YELLOW}{stats['hourly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate'] * 7):,}{Fore.CYAN}"],
-                ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate'] * 7):,}{Fore.CYAN}"],
-                ["24-hour", f"{Fore.YELLOW}{stats['daily']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate'] * 7):,}{Fore.CYAN}"],
-                ["7-day", f"{Fore.YELLOW}{stats['weekly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate']):,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate'] * 7):,}{Fore.CYAN}"]
-            ]
+            if not refresh_mode:
+                break
 
-            table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
-            print(f"{Fore.CYAN}{table}")
+            time.sleep(interval)
+
     except FileNotFoundError:
         print(f"{Fore.RED}Error: The file '{account_name}_stats.csv' was not found.")
     except ValueError as e:
         print(f"{Fore.RED}Error: {str(e)}")
+    except KeyboardInterrupt:
+        print(f"\n{Fore.YELLOW}Refresh mode stopped.")
     except Exception as e:
         print(f"{Fore.RED}An unexpected error occurred: {str(e)}")
 
