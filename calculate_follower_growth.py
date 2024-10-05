@@ -2,6 +2,7 @@ import csv
 import sys
 from datetime import datetime, timedelta
 from colorama import init, Fore, Style
+from tabulate import tabulate
 
 init(autoreset=True)  # Initialize colorama
 
@@ -48,11 +49,6 @@ def calculate_growth_stats(account_name):
         'weekly': {'diff': weekly_diff, 'rate': weekly_rate}
     }
 
-def print_growth_stats(period, diff, rate):
-    print(f"{Fore.CYAN}{period} Growth:")
-    print(f"  {Fore.GREEN}New Followers: {Style.BRIGHT}{diff}")
-    print(f"  {Fore.YELLOW}Growth Rate: {Style.BRIGHT}{rate:.2f} followers/day")
-
 def main():
     if len(sys.argv) != 2:
         print(f"Usage: python {sys.argv[0]} <account_name>")
@@ -65,17 +61,21 @@ def main():
         if stats is None:
             print(f"{Fore.RED}Not enough data to calculate growth statistics.")
         else:
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Follower Growth Statistics for {account_name}:")
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}Follower Growth Statistics for {account_name}")
             print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
             print(f"{Fore.GREEN}Current Followers: {Style.BRIGHT}{stats['current_followers']}")
             print()
-            print_growth_stats("1-hour", stats['hourly']['diff'], stats['hourly']['rate'])
-            print()
-            print_growth_stats("6-hour", stats['six_hour']['diff'], stats['six_hour']['rate'])
-            print()
-            print_growth_stats("24-hour", stats['daily']['diff'], stats['daily']['rate'])
-            print()
-            print_growth_stats("7-day", stats['weekly']['diff'], stats['weekly']['rate'])
+
+            table_data = [
+                ["Period", "New Followers", "Growth Rate (followers/day)"],
+                ["1-hour", stats['hourly']['diff'], f"{stats['hourly']['rate']:.2f}"],
+                ["6-hour", stats['six_hour']['diff'], f"{stats['six_hour']['rate']:.2f}"],
+                ["24-hour", stats['daily']['diff'], f"{stats['daily']['rate']:.2f}"],
+                ["7-day", stats['weekly']['diff'], f"{stats['weekly']['rate']:.2f}"]
+            ]
+
+            table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+            print(Fore.CYAN + table)
     except FileNotFoundError:
         print(f"{Fore.RED}Error: The file '{account_name}_stats.csv' was not found.")
     except ValueError as e:
