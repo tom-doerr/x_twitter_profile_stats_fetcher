@@ -1,7 +1,12 @@
 import csv
+import sys
 from datetime import datetime, timedelta
+from colorama import init, Fore, Style
 
-def calculate_growth_stats(csv_file):
+init(autoreset=True)  # Initialize colorama
+
+def calculate_growth_stats(account_name):
+    csv_file = f'{account_name}_stats.csv'
     data = []
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
@@ -43,35 +48,40 @@ def calculate_growth_stats(csv_file):
         'weekly': {'diff': weekly_diff, 'rate': weekly_rate}
     }
 
+def print_growth_stats(period, diff, rate):
+    print(f"{Fore.CYAN}{period} Growth:")
+    print(f"  {Fore.GREEN}New Followers: {Style.BRIGHT}{diff}")
+    print(f"  {Fore.YELLOW}Growth Rate: {Style.BRIGHT}{rate:.2f} followers/day")
+
 def main():
-    csv_file = 'tom_doerr_stats.csv'
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} <account_name>")
+        sys.exit(1)
+
+    account_name = sys.argv[1]
     try:
-        stats = calculate_growth_stats(csv_file)
+        stats = calculate_growth_stats(account_name)
 
         if stats is None:
-            print("Not enough data to calculate growth statistics.")
+            print(f"{Fore.RED}Not enough data to calculate growth statistics.")
         else:
-            print(f"Follower Growth Statistics for {csv_file}:")
-            print(f"Timestamp: {stats['current_time']:%Y-%m-%d %H:%M:%S}")
-            print(f"Current Followers: {stats['current_followers']}")
-            print("\n1-hour Growth:")
-            print(f"  New Followers: {stats['hourly']['diff']}")
-            print(f"  Growth Rate: {stats['hourly']['rate']:.2f} followers/day")
-            print("\n6-hour Growth:")
-            print(f"  New Followers: {stats['six_hour']['diff']}")
-            print(f"  Growth Rate: {stats['six_hour']['rate']:.2f} followers/day")
-            print("\n24-hour Growth:")
-            print(f"  New Followers: {stats['daily']['diff']}")
-            print(f"  Growth Rate: {stats['daily']['rate']:.2f} followers/day")
-            print("\n7-day Growth:")
-            print(f"  New Followers: {stats['weekly']['diff']}")
-            print(f"  Growth Rate: {stats['weekly']['rate']:.2f} followers/day")
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}Follower Growth Statistics for {account_name}:")
+            print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
+            print(f"{Fore.GREEN}Current Followers: {Style.BRIGHT}{stats['current_followers']}")
+            print()
+            print_growth_stats("1-hour", stats['hourly']['diff'], stats['hourly']['rate'])
+            print()
+            print_growth_stats("6-hour", stats['six_hour']['diff'], stats['six_hour']['rate'])
+            print()
+            print_growth_stats("24-hour", stats['daily']['diff'], stats['daily']['rate'])
+            print()
+            print_growth_stats("7-day", stats['weekly']['diff'], stats['weekly']['rate'])
     except FileNotFoundError:
-        print(f"Error: The file '{csv_file}' was not found.")
+        print(f"{Fore.RED}Error: The file '{account_name}_stats.csv' was not found.")
     except ValueError as e:
-        print(f"Error: {str(e)}")
+        print(f"{Fore.RED}Error: {str(e)}")
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+        print(f"{Fore.RED}An unexpected error occurred: {str(e)}")
 
 if __name__ == "__main__":
     main()
