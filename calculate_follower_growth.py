@@ -73,10 +73,10 @@ def display_stats(stats):
 
     table_data = [
         ["Period", "NF", "GR day", "GR week"],
-        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate'] * 7):>15,}{Fore.CYAN}"],
-        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate'] * 7):>15,}{Fore.CYAN}"],
-        ["24-hour", f"{Fore.YELLOW}{stats['daily']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate'] * 7):>15,}{Fore.CYAN}"],
-        ["7-day", f"{Fore.YELLOW}{stats['weekly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate'] * 7):>15,}{Fore.CYAN}"]
+        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate']):>7,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate'] * 7):>7,}{Fore.CYAN}"],
+        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate']):>7,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate'] * 7):>7,}{Fore.CYAN}"],
+        ["24-hour", f"{Fore.YELLOW}{stats['daily']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate']):>7,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate'] * 7):>7,}{Fore.CYAN}"],
+        ["7-day", f"{Fore.YELLOW}{stats['weekly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate']):>7,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate'] * 7):>7,}{Fore.CYAN}"]
     ]
 
     table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
