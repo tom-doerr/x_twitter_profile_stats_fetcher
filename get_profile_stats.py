@@ -457,7 +457,7 @@ def save_profile_html(driver, account):
     filename = os.path.join(html_dir, f"{account}_profile.html")
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(complete_html)
-    log_with_limit(f"Saved complete HTML source to {filename}")
+    log_with_limit(f"Saved complete HTML source to {filename} ({len(complete_html)} characters)")
     return filename
 
 def main(account, interval, no_headless):
