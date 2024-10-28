@@ -484,9 +484,102 @@ def save_profile_html(driver, account):
             log_with_limit("Timeout waiting for resources, continuing anyway...")
         
         # Get the page source after dynamic content has loaded
-        log_with_limit("Capturing page source...")
+        log_with_limit("Capturing page source with enhanced information...")
         expanded_html = driver.execute_script("""
-            return document.documentElement.outerHTML;
+            function getAllComputedStyles(element) {
+                const styles = window.getComputedStyle(element);
+                let styleStr = '';
+                for (let prop of styles) {
+                    styleStr += `${prop}:${styles.getPropertyValue(prop)};`;
+                }
+                return styleStr;
+            }
+
+            function getElementInfo(element) {
+                return {
+                    tagName: element.tagName,
+                    id: element.id,
+                    className: element.className,
+                    attributes: Array.from(element.attributes).map(attr => 
+                        `${attr.name}="${attr.value}"`).join(' '),
+                    computedStyle: getAllComputedStyles(element),
+                    textContent: element.textContent.trim(),
+                    innerHTML: element.innerHTML,
+                    rect: element.getBoundingClientRect().toJSON()
+                };
+            }
+
+            function processNode(node, depth = 0) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const info = getElementInfo(node);
+                    let html = '\\n' + '  '.repeat(depth) + `<${node.tagName.toLowerCase()}`;
+                    
+                    // Add all original attributes
+                    if (info.attributes) {
+                        html += ' ' + info.attributes;
+                    }
+                    
+                    // Add computed styles as data attribute
+                    html += ` data-computed-style="${info.computedStyle}"`;
+                    
+                    // Add bounding rectangle info
+                    html += ` data-rect='${JSON.stringify(info.rect)}'`;
+                    
+                    html += '>';
+                    
+                    // Process children
+                    for (let child of node.childNodes) {
+                        if (child.nodeType === Node.ELEMENT_NODE) {
+                            html += processNode(child, depth + 1);
+                        } else if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+                            html += '\\n' + '  '.repeat(depth + 1) + child.textContent.trim();
+                        }
+                    }
+                    
+                    html += '\\n' + '  '.repeat(depth) + `</${node.tagName.toLowerCase()}>`;
+                    return html;
+                }
+                return '';
+            }
+
+            // Capture network requests
+            const resources = performance.getEntriesByType('resource').map(r => ({
+                name: r.name,
+                entryType: r.entryType,
+                startTime: r.startTime,
+                duration: r.duration,
+                initiatorType: r.initiatorType
+            }));
+
+            // Capture JavaScript variables
+            const jsVars = {};
+            for (let key in window) {
+                try {
+                    if (typeof window[key] !== 'function' && key !== 'webkitStorageInfo') {
+                        jsVars[key] = window[key];
+                    }
+                } catch (e) {}
+            }
+
+            // Build the enhanced HTML
+            const docInfo = {
+                title: document.title,
+                url: window.location.href,
+                viewport: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                },
+                timestamp: new Date().toISOString(),
+                networkResources: resources,
+                jsVariables: jsVars
+            };
+
+            return `<!DOCTYPE html>
+<!-- 
+Document Info:
+${JSON.stringify(docInfo, null, 2)}
+-->
+${processNode(document.documentElement)}`;
         """)
         
         source_size = len(expanded_html)
@@ -496,13 +589,23 @@ def save_profile_html(driver, account):
             log_with_limit("WARNING: Expanded HTML is empty!")
             return None
         
-        # Add metadata comment
+        # Add enhanced metadata
         metadata = f"""
-<!-- 
-Captured at: {datetime.now().isoformat()}
+<!--
+Enhanced Profile Capture
+=======================
+Timestamp: {datetime.now().isoformat()}
 URL: {driver.current_url}
 Title: {driver.title}
 Browser: {driver.capabilities['browserName']} {driver.capabilities['browserVersion']}
+Window Size: {driver.get_window_size()}
+User Agent: {driver.execute_script('return navigator.userAgent')}
+Platform: {driver.execute_script('return navigator.platform')}
+Language: {driver.execute_script('return navigator.language')}
+Cookies: {driver.get_cookies()}
+Local Storage: {driver.execute_script('return JSON.stringify(Object.entries(localStorage))')}
+Session Storage: {driver.execute_script('return JSON.stringify(Object.entries(sessionStorage))')}
+Performance Timing: {driver.execute_script('return JSON.stringify(performance.timing)')}
 -->
 """
         final_html = metadata + expanded_html
