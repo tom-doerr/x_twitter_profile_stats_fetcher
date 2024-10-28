@@ -2,7 +2,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import logging
 import traceback
@@ -12,22 +11,10 @@ import csv
 from datetime import datetime
 import os
 import argparse
-from html_sources.extract_interaction import extract_interaction
 from colorama import init, Fore, Style
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-def log_with_limit(message, limit=1000):
-    """Log message with a character limit."""
-    if len(message) > limit:
-        message = message[:limit] + "... (truncated)"
-    logger.info(message)
-
-def get_username_from_url(url):
-    return url.split('/')[-1]
 
 def write_to_csv(username, stats):
     filename = f"{username}_stats.csv"
@@ -57,101 +44,43 @@ def initialize_browser(no_headless=False):
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--window-size=1920,1080')  # Set a larger window size
-    # Enable CDP logging
-    options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
+    options.add_argument('--window-size=1920,1080')
     if not no_headless:
-        options.add_argument('--headless')  # Headless mode by default
+        options.add_argument('--headless')
 
     try:
         service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
-        driver.set_window_size(1920, 1080)  # Ensure the window size is set
-        log_with_limit("Chrome WebDriver initialized successfully")
         return driver
     except Exception as e:
         logger.error(f"Failed to initialize Chrome WebDriver: {e}")
         return None
 
-def get_profile_stats(driver, url, timeout=20, max_html_length=1000, max_retries=3, retry_delay=5):
-    """
-    Fetch the number of posts, following, and followers for a given X (formerly Twitter) profile.
+def get_profile_stats(driver, url):
+    """Fetch profile stats from X/Twitter profile."""
+    try:
+        driver.get(url)
+        WebDriverWait(driver, 10).until(
+            lambda d: d.execute_script('return document.readyState') == 'complete'
+        )
+        time.sleep(2)  # Wait for dynamic content
 
-    Args:
-    driver (webdriver.Chrome): The Chrome WebDriver instance.
-    url (str): The URL of the X profile. Defaults to DEFAULT_URL.
-    timeout (int): Maximum time to wait for page elements, in seconds. Defaults to 20.
-    max_html_length (int): Maximum length of HTML to log. Defaults to 1000 characters.
-    max_retries (int): Maximum number of retry attempts. Defaults to 3.
-    retry_delay (int): Delay between retry attempts in seconds. Defaults to 5.
+        if "This account doesn't exist" in driver.page_source:
+            logger.error("Profile not accessible: Account doesn't exist")
+            return None
 
-    Returns:
-    dict: A dictionary containing 'posts', 'following', and 'followers' counts, or None if unable to fetch.
-    """
-    for attempt in range(max_retries):
-        try:
-            log_with_limit(f"Loading URL: {url} (Attempt {attempt + 1}/{max_retries})")
-            driver.get(url)
-            
-            # Wait for the page to load completely
-            WebDriverWait(driver, timeout).until(
-                lambda d: d.execute_script('return document.readyState') == 'complete'
-            )
-            log_with_limit("Page loaded completely")
-            
-            # Wait for main content with a shorter timeout
-            try:
-                main_content = WebDriverWait(driver, 5).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, 'main[role="main"]'))
-                )
-            except TimeoutException:
-                log_with_limit("Timeout waiting for main content, continuing anyway...")
-            
-            # Give the page a moment to load dynamic content
-            time.sleep(2)
-            
-            # Remove scrolling as it's not necessary
-            
-            # Check if the profile is accessible
-            if "This account doesn't exist" in driver.page_source:
-                logger.error("Profile not accessible: This account doesn't exist")
-                return None
-            
-            if "These tweets are protected" in driver.page_source:
-                logger.error("Profile not accessible: Tweets are protected")
-                return None
-                
-            # Try multiple methods to find the stats
-            methods = [
-                lambda: find_stats_by_xpath(driver),
-                lambda: find_stats_by_aria_label(driver),
-                lambda: find_stats_by_href(driver),
-                lambda: find_stats_by_js(driver),
-            ]
-            
-            for method in methods:
-                try:
-                    stats = method()
-                    if stats and all(stats.values()):
-                        return stats
-                except Exception as e:
-                    log_with_limit(f"Method failed: {str(e)}")
-            
-            # If we've reached this point, we couldn't find the profile stats
-            log_with_limit("Couldn't find profile stats.")
-            log_with_limit(f"Page source: {driver.page_source[:max_html_length]}")
-            
-        except Exception as e:
-            log_with_limit(f"Unexpected error occurred: {e}")
-            log_with_limit(traceback.format_exc())
-        
-        if attempt < max_retries - 1:
-            log_with_limit(f"Retrying in {retry_delay} seconds...")
-            time.sleep(retry_delay)
-        else:
-            logger.error("Failed to fetch profile stats after all retry attempts.")
-    
-    return None
+        if "These tweets are protected" in driver.page_source:
+            logger.error("Profile not accessible: Protected tweets")
+            return None
+
+        stats = find_stats_by_xpath(driver)
+        if stats and all(stats.values()):
+            return stats
+
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching profile stats: {e}")
+        return None
 
 def get_hover_text(driver, element):
     """Get the title attribute or hover text from an element."""
