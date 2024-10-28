@@ -271,7 +271,44 @@ def find_stats_by_js(driver):
         html_file = save_page_source(driver, username)
         log_with_limit(f"Saved page source to {html_file}")
 
-        # First try the original JS method
+        # Read and analyze the page source first
+        with open(html_file, 'r', encoding='utf-8') as f:
+            page_source = f.read()
+            
+        log_with_limit("\n=== Starting page source parsing ===")
+        log_with_limit(f"Page source length: {len(page_source)} characters")
+        
+        # Look specifically for followers_count in JSON data
+        followers_pattern = r'"followers_count":(\d+)'
+        followers_match = re.search(followers_pattern, page_source)
+        if followers_match:
+            follower_text = followers_match.group(1)
+            log_with_limit(f"Found match! Full match: {followers_match.group(0)}")
+            log_with_limit(f"Extracted text: {follower_text}")
+            
+            # Show surrounding context
+            start = max(0, followers_match.start() - 50)
+            end = min(len(page_source), followers_match.end() + 50)
+            context = page_source[start:end]
+            log_with_limit(f"Match context: ...{context}...")
+            
+            stats['followers'] = int(follower_text)
+            log_with_limit(f"Parsed count: {stats['followers']}")
+            
+        # If we found followers, also look for following count
+        if 'followers' in stats:
+            following_pattern = r'"friends_count":(\d+)'
+            following_match = re.search(following_pattern, page_source)
+            if following_match:
+                stats['following'] = int(following_match.group(1))
+                log_with_limit(f"Found following count: {stats['following']}")
+
+        # If we found both stats, return them
+        if len(stats) == 2:
+            log_with_limit(f"Successfully found both stats in JSON: {stats}")
+            return stats
+
+        # Fall back to the original JS method if JSON parsing failed
         js_result = driver.execute_script("""
             var stats = {};
             var elements = document.querySelectorAll('a[href$="/following"] span, a[href$="/followers"] span');
