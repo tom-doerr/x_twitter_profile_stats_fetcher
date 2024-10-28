@@ -288,6 +288,7 @@ def find_stats_by_js(driver):
             interaction_part = page_source.split('userInteractionCount')[1]
             next_ten_chars = interaction_part[:10]
             log_with_limit(f"10 chars after userInteractionCount: {next_ten_chars}")
+            print(f"\n{Fore.YELLOW}10 chars after userInteractionCount:{Style.RESET_ALL} {next_ten_chars}")
             stats['interaction_context'] = next_ten_chars
             
         # If we found followers, also look for following count
