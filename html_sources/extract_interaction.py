@@ -2,7 +2,7 @@
 
 import re
 
-def extract_interaction_count(html_file):
+def extract_interaction(html_file):
     with open(html_file, 'r', encoding='utf-8') as f:
         content = f.read()
         

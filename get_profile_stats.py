@@ -12,6 +12,7 @@ import csv
 from datetime import datetime
 import os
 import argparse
+from html_sources.extract_interaction import extract_interaction
 from colorama import init, Fore, Style
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -334,20 +335,11 @@ def find_stats_by_js(driver):
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
         # Look specifically for followers_count in JSON data
-        followers_pattern = r'"followers_count":(\d+)'
-        followers_match = re.search(followers_pattern, page_source)
-        if followers_match:
-            follower_text = followers_match.group(1)
-            log_with_limit(f"Found match! Full match: {followers_match.group(0)}")
-            log_with_limit(f"Extracted text: {follower_text}")
-            
-            # Show surrounding context
-            start = max(0, followers_match.start() - 50)
-            end = min(len(page_source), followers_match.end() + 50)
-            context = page_source[start:end]
-            log_with_limit(f"Match context: ...{context}...")
-            
-            stats['followers'] = parse_count(follower_text)
+        # Use extract_interaction to get followers count
+        followers_count = extract_interaction(html_file)
+        if followers_count:
+            stats['followers'] = int(followers_count)
+            log_with_limit(f"Found followers count from interaction: {stats['followers']}")
             log_with_limit(f"Parsed count: {stats['followers']}")
             
             if stats['followers']:
