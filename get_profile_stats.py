@@ -147,6 +147,25 @@ def get_profile_stats(driver, url, timeout=20, max_html_length=1000, max_retries
     
     return None
 
+def get_hover_text(driver, element):
+    """Get the title attribute or hover text from an element."""
+    try:
+        # First try getting the title attribute
+        title = element.get_attribute('title')
+        if title:
+            return title
+
+        # If no title, try hovering to get aria-label
+        actions = ActionChains(driver)
+        actions.move_to_element(element).perform()
+        time.sleep(0.5)  # Small delay to let hover text appear
+        aria_label = element.get_attribute('aria-label')
+        if aria_label:
+            return aria_label
+    except Exception as e:
+        log_with_limit(f"Error getting hover text: {e}")
+    return None
+
 def find_stats_by_xpath(driver):
     """Find stats using specific XPaths and search for posts, following, and followers."""
     stats = {}
@@ -162,6 +181,16 @@ def find_stats_by_xpath(driver):
             log_with_limit(f"Found {len(elements)} elements for {stat_name}")
             if elements:
                 for element in elements:
+                    # Try getting hover text first for followers
+                    if stat_name == 'followers':
+                        hover_text = get_hover_text(driver, element)
+                        if hover_text:
+                            log_with_limit(f"Hover text found for {stat_name}: '{hover_text}'")
+                            stats[stat_name] = parse_count(hover_text)
+                            log_with_limit(f"{stat_name.capitalize()} found by hover: {stats[stat_name]}")
+                            break
+
+                    # Fall back to visible text if no hover text or for other stats
                     text = element.text.strip()
                     log_with_limit(f"Text found for {stat_name}: '{text}'")
                     if text:
@@ -249,6 +278,12 @@ def parse_count(count_text):
     if not count_text:
         return None
     count_text = count_text.strip()
+    
+    # Try to extract number from formats like "10,009 Followers"
+    match = re.search(r'([\d,]+)', count_text)
+    if match:
+        count_text = match.group(1)
+    
     # Remove any non-numeric characters except comma
     count_text = re.sub(r'[^\d,]', '', count_text)
     try:
