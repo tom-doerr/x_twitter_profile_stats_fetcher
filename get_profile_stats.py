@@ -456,14 +456,13 @@ def save_profile_html(driver, account):
     html_dir = "html_sources"
     os.makedirs(html_dir, exist_ok=True)
     
-    # Get the raw response content using CDP
-    raw_html = driver.execute_cdp_cmd('Network.getResponseBody', 
-        {'requestId': driver.execute_cdp_cmd('Network.enable', {})['requestId']})['body']
+    # Simply save the current page source
+    raw_html = driver.page_source
     
     filename = os.path.join(html_dir, f"{account}_profile.html")
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(raw_html)
-    log_with_limit(f"Saved raw HTML source to {filename}")
+    log_with_limit(f"Saved HTML source to {filename}")
     return filename
 
 def main(account, interval, no_headless):
