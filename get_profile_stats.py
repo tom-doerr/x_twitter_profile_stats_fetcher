@@ -452,17 +452,20 @@ def create_test_html():
     log_with_limit(f"Created test HTML file at {filepath}")
 
 def save_profile_html(driver, account):
-    """Save the raw page source (like browser's View Source) to a local file."""
+    """Save the complete page source including dynamic content."""
     html_dir = "html_sources"
     os.makedirs(html_dir, exist_ok=True)
     
-    # Simply save the current page source
-    raw_html = driver.page_source
+    # Wait for dynamic content to load
+    time.sleep(2)
+    
+    # Get the complete page source including dynamic content
+    complete_html = driver.execute_script("return document.documentElement.outerHTML;")
     
     filename = os.path.join(html_dir, f"{account}_profile.html")
     with open(filename, 'w', encoding='utf-8') as f:
-        f.write(raw_html)
-    log_with_limit(f"Saved HTML source to {filename}")
+        f.write(complete_html)
+    log_with_limit(f"Saved complete HTML source to {filename}")
     return filename
 
 def main(account, interval, no_headless):
@@ -473,10 +476,10 @@ def main(account, interval, no_headless):
         if driver:
             try:
                 print(f"\n{Fore.YELLOW}Fetching profile stats for {account}...{Style.RESET_ALL}")
-                # Save the profile page HTML
-                save_profile_html(driver, account)
-                
                 profile_stats = get_profile_stats(driver, url)
+                
+                # Save the profile page HTML after loading
+                save_profile_html(driver, account)
                 if profile_stats:
                     print_pretty_stats(profile_stats)
                     
