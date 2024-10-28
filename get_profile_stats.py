@@ -283,8 +283,8 @@ def find_stats_by_js(driver):
         log_with_limit("\n=== Starting page source parsing ===")
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
-        # Look specifically for followers_count in JSON data
-        followers_pattern = r'"followers_count":(\d+)'
+        # Look for schema.org follower count in the HTML
+        followers_pattern = r'"userInteractionCount":(\d+)'
         followers_match = re.search(followers_pattern, page_source)
         if followers_match:
             follower_text = followers_match.group(1)
