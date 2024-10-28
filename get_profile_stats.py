@@ -416,8 +416,39 @@ def print_pretty_stats(profile_stats):
     print(f"{Fore.GREEN}Following:{Style.RESET_ALL} {profile_stats.get('following', 'N/A')}")
     print(f"{Fore.GREEN}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
 
+def create_test_html():
+    """Create a test HTML file with sample profile data."""
+    html_dir = "html_sources"
+    os.makedirs(html_dir, exist_ok=True)
+    
+    test_content = '''
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Profile Page</title></head>
+    <body>
+        <script type="application/json">
+        {
+            "followers_count": 12345,
+            "friends_count": 678,
+            "statuses_count": 910
+        }
+        </script>
+        <div class="profile-stats">
+            <a href="/following">678 Following</a>
+            <a href="/followers">12.3K Followers</a>
+        </div>
+    </body>
+    </html>
+    '''
+    
+    filepath = os.path.join(html_dir, "test2.html")
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(test_content)
+    log_with_limit(f"Created test HTML file at {filepath}")
+
 def main(account, interval, no_headless):
     init()  # Initialize colorama
+    create_test_html()  # Create test HTML file
     url = f"https://x.com/{account}"
     while True:
         driver = initialize_browser(no_headless)
