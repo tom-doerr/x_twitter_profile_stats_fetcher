@@ -278,11 +278,24 @@ def find_stats_by_js(driver):
 
         # Fallback: Parse the page source for JSON data
         page_source = driver.page_source
-        followers_match = re.search(r'"normal_followers_count":(\d+)', page_source)
-        following_match = re.search(r'"friends_count":(\d+)', page_source)
         
-        if followers_match:
-            stats['followers'] = int(followers_match.group(1))
+        # Try multiple patterns for follower count
+        follower_patterns = [
+            r'"normal_followers_count":(\d+)',
+            r'"followers_count":(\d+)',
+            r'title="(\d+(?:,\d+)*) Followers"',
+            r'<span>[^<]*?(\d+(?:,\d+)*(?:\.\d+)?[KMB]?) Followers'
+        ]
+        
+        for pattern in follower_patterns:
+            followers_match = re.search(pattern, page_source)
+            if followers_match:
+                follower_text = followers_match.group(1)
+                stats['followers'] = parse_count(follower_text)
+                if stats['followers']:
+                    break
+                    
+        following_match = re.search(r'"friends_count":(\d+)', page_source)
         if following_match:
             stats['following'] = int(following_match.group(1))
             
