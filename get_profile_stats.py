@@ -334,20 +334,15 @@ def find_stats_by_js(driver):
         log_with_limit("\n=== Starting page source parsing ===")
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
-        # Look specifically for followers_count in JSON data
         # Use extract_interaction to get followers count
         followers_count = extract_interaction(html_file)
         if followers_count:
             stats['followers'] = int(followers_count)
             log_with_limit(f"Found followers count from interaction: {stats['followers']}")
-            log_with_limit(f"Parsed count: {stats['followers']}")
-            
-            if stats['followers']:
-                log_with_limit(f"Successfully parsed follower count: {stats['followers']}")
-            else:
-                log_with_limit("Failed to parse number from match")
+            # Override any previously found followers count since this is more accurate
+            return {'followers': stats['followers'], 'following': stats.get('following')}
         else:
-            log_with_limit("No regex match found")
+            log_with_limit("No userInteractionCount found in HTML")
                     
         following_match = re.search(r'"friends_count":(\d+)', page_source)
         if following_match:
