@@ -6,9 +6,10 @@ def extract_interaction_count(html_file):
     with open(html_file, 'r', encoding='utf-8') as f:
         content = f.read()
         
-    match = re.search(r'userInteractionCount[^"\']*?([^"\']{10})', content)
+    match = re.search(r'"userInteractionCount":(\d+)', content)
     if match:
-        return match.group(1)
+        count = match.group(1)
+        return count
     return None
 
 if __name__ == "__main__":
