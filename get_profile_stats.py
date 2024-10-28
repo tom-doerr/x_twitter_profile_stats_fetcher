@@ -283,22 +283,15 @@ def find_stats_by_js(driver):
         log_with_limit("\n=== Starting page source parsing ===")
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
-        # Look for schema.org follower count in the HTML
-        followers_pattern = r'"userInteractionCount":(\d+)'
-        followers_match = re.search(followers_pattern, page_source)
-        if followers_match:
-            follower_text = followers_match.group(1)
-            log_with_limit(f"Found match! Full match: {followers_match.group(0)}")
-            log_with_limit(f"Extracted text: {follower_text}")
-            
-            # Show surrounding context
-            start = max(0, followers_match.start() - 50)
-            end = min(len(page_source), followers_match.end() + 50)
-            context = page_source[start:end]
-            log_with_limit(f"Match context: ...{context}...")
-            
-            stats['followers'] = int(follower_text)
-            log_with_limit(f"Parsed count: {stats['followers']}")
+        # Look for follower count in the HTML using string splits
+        if '"followers_count":' in page_source:
+            follower_part = page_source.split('"followers_count":')[1]
+            follower_count = follower_part.split(',')[0].strip()
+            try:
+                stats['followers'] = int(follower_count)
+                log_with_limit(f"Found follower count in HTML: {stats['followers']}")
+            except ValueError:
+                log_with_limit(f"Failed to parse follower count: {follower_count}")
             
         # If we found followers, also look for following count
         if 'followers' in stats:
