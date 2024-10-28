@@ -287,13 +287,22 @@ def find_stats_by_js(driver):
             r'<span>[^<]*?(\d+(?:,\d+)*(?:\.\d+)?[KMB]?) Followers'
         ]
         
+        log_with_limit("Trying to find follower count in page source...")
         for pattern in follower_patterns:
+            log_with_limit(f"Trying pattern: {pattern}")
             followers_match = re.search(pattern, page_source)
             if followers_match:
                 follower_text = followers_match.group(1)
+                log_with_limit(f"Found match with pattern. Raw text: {follower_text}")
                 stats['followers'] = parse_count(follower_text)
+                log_with_limit(f"Parsed follower count: {stats['followers']}")
                 if stats['followers']:
+                    log_with_limit(f"Successfully parsed follower count: {stats['followers']}")
                     break
+                else:
+                    log_with_limit("Failed to parse follower count from match")
+            else:
+                log_with_limit("No match found with this pattern")
                     
         following_match = re.search(r'"friends_count":(\d+)', page_source)
         if following_match:
