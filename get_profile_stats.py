@@ -251,10 +251,15 @@ def find_stats_by_href(driver):
     return stats if all(stats.values()) else None
 
 def save_page_source(driver, username):
-    """Save the page source to a local file."""
-    filename = f"{username}_page.html"
+    """Save the page source to a local file in the html_sources directory."""
+    # Create directory if it doesn't exist
+    html_dir = "html_sources"
+    os.makedirs(html_dir, exist_ok=True)
+    
+    filename = os.path.join(html_dir, f"{username}_page.html")
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(driver.page_source)
+    log_with_limit(f"Saved HTML source to {filename}")
     return filename
 
 def find_stats_by_js(driver):
