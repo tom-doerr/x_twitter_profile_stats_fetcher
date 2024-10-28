@@ -57,6 +57,8 @@ def initialize_browser(no_headless=False):
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')  # Set a larger window size
+    # Enable CDP logging
+    options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
     if not no_headless:
         options.add_argument('--headless')  # Headless mode by default
 
@@ -251,15 +253,18 @@ def find_stats_by_href(driver):
     return stats if all(stats.values()) else None
 
 def save_page_source(driver, username):
-    """Save the page source to a local file in the html_sources directory."""
-    # Create directory if it doesn't exist
+    """Save the raw page source (like browser's View Source) to a local file."""
     html_dir = "html_sources"
     os.makedirs(html_dir, exist_ok=True)
     
+    # Get the raw response content using CDP
+    raw_html = driver.execute_cdp_cmd('Network.getResponseBody', 
+        {'requestId': driver.execute_cdp_cmd('Network.enable', {})['requestId']})['body']
+    
     filename = os.path.join(html_dir, f"{username}_page.html")
     with open(filename, 'w', encoding='utf-8') as f:
-        f.write(driver.page_source)
-    log_with_limit(f"Saved HTML source to {filename}")
+        f.write(raw_html)
+    log_with_limit(f"Saved raw HTML source to {filename}")
     return filename
 
 def find_stats_by_js(driver):
