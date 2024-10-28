@@ -406,12 +406,16 @@ def get_text_by_xpath(driver, xpath):
         return f"Error finding element: {str(e)}"
 
 def print_pretty_stats(profile_stats):
-    print(f"{Fore.CYAN}Profile Stats:{Style.RESET_ALL}")
+    print(f"\n{Fore.CYAN}=== Profile Stats ==={Style.RESET_ALL}")
     print(f"{Fore.GREEN}Posts:{Style.RESET_ALL} {profile_stats.get('posts', 'N/A')}")
     print(f"{Fore.GREEN}Following:{Style.RESET_ALL} {profile_stats.get('following', 'N/A')}")
     print(f"{Fore.GREEN}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
     if profile_stats.get('interaction_context'):
         print(f"{Fore.YELLOW}Interaction Context:{Style.RESET_ALL} {profile_stats['interaction_context']}")
+    
+    # Highlight follower count separately
+    print(f"\n{Fore.CYAN}=== Current Follower Count ==={Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A'):,}")
 
 def create_test_html():
     """Create a test HTML file with sample profile data."""
