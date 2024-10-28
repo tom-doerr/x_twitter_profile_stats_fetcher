@@ -81,7 +81,16 @@ def get_profile_stats(driver, url):
             logger.error("Profile not accessible: Protected tweets")
             return None
 
+        # Get initial stats from visible elements
         stats = find_stats_by_xpath(driver)
+        
+        # Save profile HTML and extract accurate follower count
+        html_file = save_profile_html(driver, driver.current_url.split('/')[-1])
+        followers_count = extract_interaction(html_file)
+        if followers_count:
+            stats['followers'] = followers_count
+            log_with_limit(f"Updated followers count from userInteractionCount: {followers_count}")
+
         if stats and all(stats.values()):
             return stats
 
