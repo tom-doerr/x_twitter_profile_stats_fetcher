@@ -413,9 +413,11 @@ def print_pretty_stats(profile_stats):
     if profile_stats.get('interaction_context'):
         print(f"{Fore.YELLOW}Interaction Context:{Style.RESET_ALL} {profile_stats['interaction_context']}")
     
-    # Highlight follower count separately
+    # Highlight follower count and character count separately
     print(f"\n{Fore.CYAN}=== Current Follower Count ==={Style.RESET_ALL}")
     print(f"{Fore.YELLOW}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A'):,}")
+    print(f"\n{Fore.CYAN}=== HTML Source Stats ==={Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Character Count:{Style.RESET_ALL} {len(profile_stats.get('html_source', '')):,}")
 
 def create_test_html():
     """Create a test HTML file with sample profile data."""
@@ -475,8 +477,10 @@ def main(account, interval, no_headless):
                 print(f"\n{Fore.YELLOW}Fetching profile stats for {account}...{Style.RESET_ALL}")
                 profile_stats = get_profile_stats(driver, url)
                 
-                # Save the profile page HTML after loading
-                save_profile_html(driver, account)
+                # Save the profile page HTML after loading and add to stats
+                html_file = save_profile_html(driver, account)
+                with open(html_file, 'r', encoding='utf-8') as f:
+                    profile_stats['html_source'] = f.read()
                 if profile_stats:
                     print_pretty_stats(profile_stats)
                     
