@@ -13,7 +13,7 @@ def extract_interaction(html_file):
     return None
 
 if __name__ == "__main__":
-    result = extract_interaction_count("html_sources/tom_doerr_profile.html")
+    result = extract_interaction("html_sources/tom_doerr_profile.html")
     if result:
         print(result)
     else:
