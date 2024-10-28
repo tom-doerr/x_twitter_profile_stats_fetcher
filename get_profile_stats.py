@@ -283,15 +283,11 @@ def find_stats_by_js(driver):
         log_with_limit("\n=== Starting page source parsing ===")
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
-        # Look for follower count in the HTML using string splits
-        if '"followers_count":' in page_source:
-            follower_part = page_source.split('"followers_count":')[1]
-            follower_count = follower_part.split(',')[0].strip()
-            try:
-                stats['followers'] = int(follower_count)
-                log_with_limit(f"Found follower count in HTML: {stats['followers']}")
-            except ValueError:
-                log_with_limit(f"Failed to parse follower count: {follower_count}")
+        # Look for userInteractionCount in the page source and display 10 chars after it
+        if 'userInteractionCount' in page_source:
+            interaction_part = page_source.split('userInteractionCount')[1]
+            next_ten_chars = interaction_part[:10]
+            log_with_limit(f"10 chars after userInteractionCount: {next_ten_chars}")
             
         # If we found followers, also look for following count
         if 'followers' in stats:
