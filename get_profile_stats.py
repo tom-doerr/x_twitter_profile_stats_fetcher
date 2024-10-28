@@ -279,19 +279,28 @@ def parse_count(count_text):
         return None
     count_text = count_text.strip()
     
-    # Try to extract number from formats like "10,009 Followers"
-    match = re.search(r'([\d,]+)', count_text)
-    if match:
-        count_text = match.group(1)
+    # Handle K/M/B suffixes
+    multipliers = {'K': 1000, 'M': 1000000, 'B': 1000000000}
     
-    # Remove any non-numeric characters except comma
-    count_text = re.sub(r'[^\d,]', '', count_text)
+    # Try to extract number and potential suffix
+    match = re.search(r'([\d,.]+)\s*([KMB])?', count_text, re.IGNORECASE)
+    if not match:
+        return None
+        
+    number_str = match.group(1)
+    suffix = match.group(2).upper() if match.group(2) else ''
+    
     try:
-        # Remove commas and convert to integer
-        count = int(count_text.replace(',', ''))
-        return count
-    except ValueError:
-        log_with_limit(f"Failed to parse count: {count_text}")
+        # Convert the number part
+        base_number = float(number_str.replace(',', ''))
+        
+        # Apply multiplier if suffix exists
+        if suffix in multipliers:
+            return int(base_number * multipliers[suffix])
+        return int(base_number)
+        
+    except (ValueError, AttributeError) as e:
+        log_with_limit(f"Failed to parse count: {count_text} - Error: {e}")
         return None
 
 def get_text_by_xpath(driver, xpath):
