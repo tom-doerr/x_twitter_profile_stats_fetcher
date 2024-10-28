@@ -15,6 +15,6 @@ def extract_interaction_count(html_file):
 if __name__ == "__main__":
     result = extract_interaction_count("html_sources/tom_doerr_profile.html")
     if result:
-        print(f"10 chars after userInteractionCount: {result}")
+        print(result)
     else:
         print("userInteractionCount not found in file")
