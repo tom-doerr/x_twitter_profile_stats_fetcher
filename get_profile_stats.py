@@ -255,9 +255,10 @@ def find_stats_by_href(driver):
     return stats if all(stats.values()) else None
 
 def find_stats_by_js(driver):
-    """Find stats using JavaScript execution."""
+    """Find stats using JavaScript execution and page source parsing."""
     stats = {}
     try:
+        # First try the original JS method
         js_result = driver.execute_script("""
             var stats = {};
             var elements = document.querySelectorAll('a[href$="/following"] span, a[href$="/followers"] span');
@@ -276,9 +277,25 @@ def find_stats_by_js(driver):
         if js_result:
             stats = {k: parse_count(v) for k, v in js_result.items()}
             log_with_limit(f"Stats found by JavaScript: {stats}")
+            if all(stats.values()):
+                return stats
+
+        # Fallback: Parse the page source for JSON data
+        page_source = driver.page_source
+        followers_match = re.search(r'"normal_followers_count":(\d+)', page_source)
+        following_match = re.search(r'"friends_count":(\d+)', page_source)
+        
+        if followers_match:
+            stats['followers'] = int(followers_match.group(1))
+        if following_match:
+            stats['following'] = int(following_match.group(1))
+            
+        if stats:
+            log_with_limit(f"Stats found in page source JSON: {stats}")
+            
     except Exception as e:
-        log_with_limit(f"Failed to find stats by JavaScript: {str(e)}")
-    return stats if all(stats.values()) else None
+        log_with_limit(f"Failed to find stats by JavaScript and JSON parsing: {str(e)}")
+    return stats if stats else None
 
 def parse_count(count_text):
     """Parse the count from text and return as an integer."""
