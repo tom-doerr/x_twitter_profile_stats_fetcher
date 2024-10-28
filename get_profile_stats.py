@@ -446,15 +446,28 @@ def create_test_html():
         f.write(test_content)
     log_with_limit(f"Created test HTML file at {filepath}")
 
+def save_profile_html(driver, account):
+    """Save the profile page HTML to a file."""
+    html_dir = "html_sources"
+    os.makedirs(html_dir, exist_ok=True)
+    
+    filename = os.path.join(html_dir, f"{account}_profile.html")
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(driver.page_source)
+    log_with_limit(f"Saved profile HTML to {filename}")
+    return filename
+
 def main(account, interval, no_headless):
     init()  # Initialize colorama
-    create_test_html()  # Create test HTML file
     url = f"https://x.com/{account}"
     while True:
         driver = initialize_browser(no_headless)
         if driver:
             try:
                 print(f"\n{Fore.YELLOW}Fetching profile stats for {account}...{Style.RESET_ALL}")
+                # Save the profile page HTML
+                save_profile_html(driver, account)
+                
                 profile_stats = get_profile_stats(driver, url)
                 if profile_stats:
                     print_pretty_stats(profile_stats)
