@@ -463,7 +463,9 @@ def save_profile_html(driver, account):
         
         # Wait for dynamic content to load
         log_with_limit("Waiting for dynamic content to load...")
-        time.sleep(5)  # Give time for JavaScript to execute
+        WebDriverWait(driver, 10).until(
+            lambda d: d.execute_script('return document.readyState') == 'complete'
+        )
         
         # Scroll the page to trigger lazy loading
         log_with_limit("Scrolling page to trigger lazy loading...")
@@ -481,41 +483,10 @@ def save_profile_html(driver, account):
         except TimeoutException:
             log_with_limit("Timeout waiting for resources, continuing anyway...")
         
-        # Execute JavaScript to get computed styles and expanded DOM
-        log_with_limit("Capturing computed styles and expanded DOM...")
+        # Get the page source after dynamic content has loaded
+        log_with_limit("Capturing page source...")
         expanded_html = driver.execute_script("""
-            function getFullHTML() {
-                // Clone the document
-                var clonedDoc = document.documentElement.cloneNode(true);
-                
-                // Get all elements
-                var all = clonedDoc.getElementsByTagName('*');
-                
-                // Include computed styles
-                for (var i = 0; i < all.length; i++) {
-                    var elm = all[i];
-                    var computedStyle = window.getComputedStyle(document.getElementsByTagName('*')[i]);
-                    var styles = '';
-                    for (var j = 0; j < computedStyle.length; j++) {
-                        var prop = computedStyle[j];
-                        styles += prop + ':' + computedStyle.getPropertyValue(prop) + ';';
-                    }
-                    if (styles) {
-                        elm.setAttribute('style', styles);
-                    }
-                }
-                
-                // Expand shadow DOM if present
-                var shadows = document.querySelectorAll('*');
-                shadows.forEach(function(el) {
-                    if (el.shadowRoot) {
-                        el.setAttribute('data-shadow-content', el.shadowRoot.innerHTML);
-                    }
-                });
-                
-                return '<!DOCTYPE html>\\n' + clonedDoc.outerHTML;
-            }
-            return getFullHTML();
+            return document.documentElement.outerHTML;
         """)
         
         source_size = len(expanded_html)
