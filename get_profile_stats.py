@@ -339,6 +339,7 @@ def find_stats_by_js(driver):
         if followers_count:
             stats['followers'] = int(followers_count)
             log_with_limit(f"Found followers count from interaction: {stats['followers']}")
+            print(f"\n{Fore.GREEN}Followers from userInteractionCount:{Style.RESET_ALL} {followers_count:,}")
             # Override any previously found followers count since this is more accurate
             return {'followers': stats['followers'], 'following': stats.get('following')}
         else:
