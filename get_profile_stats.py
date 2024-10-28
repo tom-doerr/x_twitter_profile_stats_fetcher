@@ -250,10 +250,22 @@ def find_stats_by_href(driver):
         log_with_limit(f"Failed to find stats by href: {str(e)}")
     return stats if all(stats.values()) else None
 
+def save_page_source(driver, username):
+    """Save the page source to a local file."""
+    filename = f"{username}_page.html"
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(driver.page_source)
+    return filename
+
 def find_stats_by_js(driver):
     """Find stats using JavaScript execution and page source parsing."""
     stats = {}
     try:
+        # Save page source locally
+        username = driver.current_url.split('/')[-1]
+        html_file = save_page_source(driver, username)
+        log_with_limit(f"Saved page source to {html_file}")
+
         # First try the original JS method
         js_result = driver.execute_script("""
             var stats = {};
@@ -276,31 +288,16 @@ def find_stats_by_js(driver):
             if all(stats.values()):
                 return stats
 
-        # Fallback: Parse the page source for JSON data
-        page_source = driver.page_source
+        # Read the saved page source
+        with open(html_file, 'r', encoding='utf-8') as f:
+            page_source = f.read()
+            
         log_with_limit("\n=== Starting page source parsing ===")
         log_with_limit(f"Page source length: {len(page_source)} characters")
         
-        # Try multiple patterns for follower count
-        follower_patterns = [
-            r'"normal_followers_count":(\d+)',
-            r'"followers_count":(\d+)',
-            r'title="(\d+(?:,\d+)*) Followers"',
-            r'<span>[^<]*?(\d+(?:,\d+)*(?:\.\d+)?[KMB]?) Followers'
-        ]
-        
-        log_with_limit("\nSearching for follower count patterns:")
-        for pattern in follower_patterns:
-            log_with_limit(f"\nTrying pattern: {pattern}")
-            
-            # First check if the pattern exists at all
-            if pattern in page_source:
-                log_with_limit("Pattern string found in page source")
-            else:
-                log_with_limit("Pattern string NOT found in page source")
-                continue
-                
-            followers_match = re.search(pattern, page_source)
+        # Look specifically for followers_count in JSON data
+        followers_pattern = r'"followers_count":(\d+)'
+        followers_match = re.search(followers_pattern, page_source)
             if followers_match:
                 follower_text = followers_match.group(1)
                 log_with_limit(f"Found match! Full match: {followers_match.group(0)}")
