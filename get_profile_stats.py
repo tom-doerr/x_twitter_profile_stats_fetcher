@@ -288,6 +288,7 @@ def find_stats_by_js(driver):
             interaction_part = page_source.split('userInteractionCount')[1]
             next_ten_chars = interaction_part[:10]
             log_with_limit(f"10 chars after userInteractionCount: {next_ten_chars}")
+            stats['interaction_context'] = next_ten_chars
             
         # If we found followers, also look for following count
         if 'followers' in stats:
@@ -409,6 +410,8 @@ def print_pretty_stats(profile_stats):
     print(f"{Fore.GREEN}Posts:{Style.RESET_ALL} {profile_stats.get('posts', 'N/A')}")
     print(f"{Fore.GREEN}Following:{Style.RESET_ALL} {profile_stats.get('following', 'N/A')}")
     print(f"{Fore.GREEN}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
+    if profile_stats.get('interaction_context'):
+        print(f"{Fore.YELLOW}Interaction Context:{Style.RESET_ALL} {profile_stats['interaction_context']}")
 
 def create_test_html():
     """Create a test HTML file with sample profile data."""
