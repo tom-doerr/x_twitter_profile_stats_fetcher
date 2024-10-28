@@ -547,8 +547,13 @@ Browser: {driver.capabilities['browserName']} {driver.capabilities['browserVersi
             
             # Read back the first few lines
             with open(filename, 'r', encoding='utf-8') as f:
-                first_lines = ''.join([next(f) for _ in range(10)])
-                log_with_limit(f"File content verification (first few lines):\n{first_lines}")
+                first_lines = []
+                for _ in range(10):
+                    try:
+                        first_lines.append(next(f))
+                    except StopIteration:
+                        break
+                log_with_limit(f"File content verification (first few lines):\n{''.join(first_lines)}")
             
             return filename
         else:
