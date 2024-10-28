@@ -447,7 +447,7 @@ def create_test_html():
     log_with_limit(f"Created test HTML file at {filepath}")
 
 def save_profile_html(driver, account):
-    """Save the profile page HTML to a file with debug information."""
+    """Save the fully rendered profile page HTML to a file with debug information."""
     try:
         html_dir = "html_sources"
         log_with_limit(f"Creating directory: {html_dir}")
@@ -456,35 +456,95 @@ def save_profile_html(driver, account):
         filename = os.path.join(html_dir, f"{account}_profile.html")
         log_with_limit(f"Attempting to save HTML to: {filename}")
         
-        # Get page source and log its size
-        page_source = driver.page_source
-        source_size = len(page_source)
-        log_with_limit(f"Retrieved page source (size: {source_size} bytes)")
+        # Wait for dynamic content to load
+        log_with_limit("Waiting for dynamic content to load...")
+        time.sleep(5)  # Give time for JavaScript to execute
         
-        # Check if we actually got content
+        # Scroll the page to trigger lazy loading
+        log_with_limit("Scrolling page to trigger lazy loading...")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+        driver.execute_script("window.scrollTo(0, 0);")
+        time.sleep(1)
+        
+        # Wait for network activity to settle
+        log_with_limit("Waiting for network activity to settle...")
+        try:
+            WebDriverWait(driver, 10).until(
+                lambda d: d.execute_script('return window.performance.getEntriesByType("resource").length') > 0
+            )
+        except TimeoutException:
+            log_with_limit("Timeout waiting for resources, continuing anyway...")
+        
+        # Execute JavaScript to get computed styles and expanded DOM
+        log_with_limit("Capturing computed styles and expanded DOM...")
+        expanded_html = driver.execute_script("""
+            function getFullHTML() {
+                // Clone the document
+                var clonedDoc = document.documentElement.cloneNode(true);
+                
+                // Get all elements
+                var all = clonedDoc.getElementsByTagName('*');
+                
+                // Include computed styles
+                for (var i = 0; i < all.length; i++) {
+                    var elm = all[i];
+                    var computedStyle = window.getComputedStyle(document.getElementsByTagName('*')[i]);
+                    var styles = '';
+                    for (var j = 0; j < computedStyle.length; j++) {
+                        var prop = computedStyle[j];
+                        styles += prop + ':' + computedStyle.getPropertyValue(prop) + ';';
+                    }
+                    if (styles) {
+                        elm.setAttribute('style', styles);
+                    }
+                }
+                
+                // Expand shadow DOM if present
+                var shadows = document.querySelectorAll('*');
+                shadows.forEach(function(el) {
+                    if (el.shadowRoot) {
+                        el.setAttribute('data-shadow-content', el.shadowRoot.innerHTML);
+                    }
+                });
+                
+                return '<!DOCTYPE html>\\n' + clonedDoc.outerHTML;
+            }
+            return getFullHTML();
+        """)
+        
+        source_size = len(expanded_html)
+        log_with_limit(f"Retrieved expanded HTML (size: {source_size} bytes)")
+        
         if source_size == 0:
-            log_with_limit("WARNING: Page source is empty!")
+            log_with_limit("WARNING: Expanded HTML is empty!")
             return None
-            
-        # Log a preview of the content
-        preview_length = 200
-        content_preview = page_source[:preview_length]
-        log_with_limit(f"Content preview: {content_preview}...")
+        
+        # Add metadata comment
+        metadata = f"""
+<!-- 
+Captured at: {datetime.now().isoformat()}
+URL: {driver.current_url}
+Title: {driver.title}
+Browser: {driver.capabilities['browserName']} {driver.capabilities['browserVersion']}
+-->
+"""
+        final_html = metadata + expanded_html
         
         # Save the file
         with open(filename, 'w', encoding='utf-8') as f:
-            f.write(page_source)
-            
-        # Verify the file was created
+            f.write(final_html)
+        
+        # Verify the file
         if os.path.exists(filename):
             file_size = os.path.getsize(filename)
-            log_with_limit(f"Successfully saved HTML file (size: {file_size} bytes)")
+            log_with_limit(f"Successfully saved expanded HTML file (size: {file_size} bytes)")
             
-            # Read back the first few lines to verify content
+            # Read back the first few lines
             with open(filename, 'r', encoding='utf-8') as f:
-                first_lines = ''.join(f.readlines(5))
+                first_lines = ''.join([next(f) for _ in range(10)])
                 log_with_limit(f"File content verification (first few lines):\n{first_lines}")
-                
+            
             return filename
         else:
             log_with_limit("ERROR: File was not created!")
