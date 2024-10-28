@@ -96,20 +96,16 @@ def get_profile_stats(driver, url, timeout=20, max_html_length=1000, max_retries
             )
             log_with_limit("Page loaded completely")
             
-            # Wait for loading animation to disappear
-            WebDriverWait(driver, timeout).until_not(
-                EC.presence_of_element_located((By.CSS_SELECTOR, '[aria-label="Loading…"]'))
-            )
+            # Wait for main content with a shorter timeout
+            try:
+                main_content = WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, 'main[role="main"]'))
+                )
+            except TimeoutException:
+                log_with_limit("Timeout waiting for main content, continuing anyway...")
             
-            # Wait for main content and ensure it's not empty
-            main_content = WebDriverWait(driver, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'main[role="main"]'))
-            )
-            
-            # Additional wait for profile stats to be present
-            WebDriverWait(driver, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'a[href$="/followers"]'))
-            )
+            # Give the page a moment to load dynamic content
+            time.sleep(2)
             
             # Remove scrolling as it's not necessary
             
