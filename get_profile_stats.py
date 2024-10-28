@@ -469,6 +469,7 @@ def save_profile_html(driver, account):
     return filename
 
 def main(account, interval, no_headless):
+    profile_stats = None
     init()  # Initialize colorama
     url = f"https://x.com/{account}"
     while True:
@@ -507,7 +508,7 @@ def main(account, interval, no_headless):
             print(f"{Fore.RED}Failed to initialize the browser.{Style.RESET_ALL}")
         
         if interval <= 0:
-            break
+            return profile_stats
         
         print(f"\n{Fore.YELLOW}Waiting for {interval} seconds before next fetch...{Style.RESET_ALL}")
         time.sleep(interval)
@@ -520,4 +521,6 @@ if __name__ == "__main__":
     parser.add_argument("--no-headless", action="store_true", help="Run Chrome in non-headless mode")
     args = parser.parse_args()
 
-    main(args.account, args.interval, args.no_headless)
+    profile_stats = main(args.account, args.interval, args.no_headless)
+    if profile_stats:
+        print(f"\n{Fore.GREEN}Follower count:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
