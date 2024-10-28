@@ -2,7 +2,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
+from html_sources.extract_interaction import extract_interaction
 import logging
 import traceback
 import time
@@ -15,6 +17,12 @@ from colorama import init, Fore, Style
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def log_with_limit(message, limit=1000):
+    """Log message with a character limit."""
+    if len(message) > limit:
+        message = message[:limit] + "... (truncated)"
+    logger.info(message)
 
 def write_to_csv(username, stats):
     filename = f"{username}_stats.csv"
