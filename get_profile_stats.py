@@ -447,15 +447,53 @@ def create_test_html():
     log_with_limit(f"Created test HTML file at {filepath}")
 
 def save_profile_html(driver, account):
-    """Save the profile page HTML to a file."""
-    html_dir = "html_sources"
-    os.makedirs(html_dir, exist_ok=True)
-    
-    filename = os.path.join(html_dir, f"{account}_profile.html")
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(driver.page_source)
-    log_with_limit(f"Saved profile HTML to {filename}")
-    return filename
+    """Save the profile page HTML to a file with debug information."""
+    try:
+        html_dir = "html_sources"
+        log_with_limit(f"Creating directory: {html_dir}")
+        os.makedirs(html_dir, exist_ok=True)
+        
+        filename = os.path.join(html_dir, f"{account}_profile.html")
+        log_with_limit(f"Attempting to save HTML to: {filename}")
+        
+        # Get page source and log its size
+        page_source = driver.page_source
+        source_size = len(page_source)
+        log_with_limit(f"Retrieved page source (size: {source_size} bytes)")
+        
+        # Check if we actually got content
+        if source_size == 0:
+            log_with_limit("WARNING: Page source is empty!")
+            return None
+            
+        # Log a preview of the content
+        preview_length = 200
+        content_preview = page_source[:preview_length]
+        log_with_limit(f"Content preview: {content_preview}...")
+        
+        # Save the file
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(page_source)
+            
+        # Verify the file was created
+        if os.path.exists(filename):
+            file_size = os.path.getsize(filename)
+            log_with_limit(f"Successfully saved HTML file (size: {file_size} bytes)")
+            
+            # Read back the first few lines to verify content
+            with open(filename, 'r', encoding='utf-8') as f:
+                first_lines = ''.join(f.readlines(5))
+                log_with_limit(f"File content verification (first few lines):\n{first_lines}")
+                
+            return filename
+        else:
+            log_with_limit("ERROR: File was not created!")
+            return None
+            
+    except Exception as e:
+        log_with_limit(f"ERROR saving HTML: {str(e)}")
+        log_with_limit(traceback.format_exc())
+        return None
 
 def main(account, interval, no_headless):
     init()  # Initialize colorama
