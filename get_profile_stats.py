@@ -278,6 +278,8 @@ def find_stats_by_js(driver):
 
         # Fallback: Parse the page source for JSON data
         page_source = driver.page_source
+        log_with_limit("\n=== Starting page source parsing ===")
+        log_with_limit(f"Page source length: {len(page_source)} characters")
         
         # Try multiple patterns for follower count
         follower_patterns = [
@@ -287,22 +289,39 @@ def find_stats_by_js(driver):
             r'<span>[^<]*?(\d+(?:,\d+)*(?:\.\d+)?[KMB]?) Followers'
         ]
         
-        log_with_limit("Trying to find follower count in page source...")
+        log_with_limit("\nSearching for follower count patterns:")
         for pattern in follower_patterns:
-            log_with_limit(f"Trying pattern: {pattern}")
+            log_with_limit(f"\nTrying pattern: {pattern}")
+            
+            # First check if the pattern exists at all
+            if pattern in page_source:
+                log_with_limit("Pattern string found in page source")
+            else:
+                log_with_limit("Pattern string NOT found in page source")
+                continue
+                
             followers_match = re.search(pattern, page_source)
             if followers_match:
                 follower_text = followers_match.group(1)
-                log_with_limit(f"Found match with pattern. Raw text: {follower_text}")
+                log_with_limit(f"Found match! Full match: {followers_match.group(0)}")
+                log_with_limit(f"Extracted text: {follower_text}")
+                
+                # Show surrounding context
+                start = max(0, followers_match.start() - 50)
+                end = min(len(page_source), followers_match.end() + 50)
+                context = page_source[start:end]
+                log_with_limit(f"Match context: ...{context}...")
+                
                 stats['followers'] = parse_count(follower_text)
-                log_with_limit(f"Parsed follower count: {stats['followers']}")
+                log_with_limit(f"Parsed count: {stats['followers']}")
+                
                 if stats['followers']:
                     log_with_limit(f"Successfully parsed follower count: {stats['followers']}")
                     break
                 else:
-                    log_with_limit("Failed to parse follower count from match")
+                    log_with_limit("Failed to parse number from match")
             else:
-                log_with_limit("No match found with this pattern")
+                log_with_limit("No regex match found")
                     
         following_match = re.search(r'"friends_count":(\d+)', page_source)
         if following_match:
