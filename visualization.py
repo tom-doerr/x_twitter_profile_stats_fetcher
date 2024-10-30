@@ -4,10 +4,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 import time
+from datetime import datetime
 
 def plot_followers_and_posts(file_path, history_days):
+    print(f"\nRefresh timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
     # Load the CSV file
     df = pd.read_csv(file_path)
+    
+    # Calculate followers gained per post
+    followers_gained = df['followers'].iloc[-1] - df['followers'].iloc[0]
+    posts_made = df['posts'].iloc[-1] - df['posts'].iloc[0]
+    followers_per_post = followers_gained / posts_made if posts_made > 0 else 0
+    print(f"Followers gained per post: {followers_per_post:.2f}")
     
     # Convert datetime column to pandas datetime format
     df['datetime'] = pd.to_datetime(df['datetime'])
