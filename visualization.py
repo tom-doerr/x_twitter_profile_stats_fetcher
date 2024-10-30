@@ -16,20 +16,30 @@ def plot_followers_and_posts(file_path, history_days):
     cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
     filtered_df = df[df['datetime'] >= cutoff_date]
     
-    # Plotting the followers and posts over time
-    plt.figure(figsize=(10, 5))
+    # Create figure with two y-axes
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+    ax2 = ax1.twinx()
     
-    # Plot followers
-    plt.plot(filtered_df['datetime'], filtered_df['followers'], label='Followers', linewidth=2)
+    # Plot followers on primary y-axis
+    color1 = '#1DA1F2'  # Twitter blue
+    ax1.plot(filtered_df['datetime'], filtered_df['followers'], color=color1, linewidth=2, label='Followers')
+    ax1.set_xlabel('Datetime')
+    ax1.set_ylabel('Followers', color=color1)
+    ax1.tick_params(axis='y', labelcolor=color1)
     
-    # Plot posts
-    plt.plot(filtered_df['datetime'], filtered_df['posts'], label='Posts', linewidth=2)
+    # Plot posts on secondary y-axis
+    color2 = '#17BF63'  # Twitter green
+    ax2.plot(filtered_df['datetime'], filtered_df['posts'], color=color2, linewidth=2, label='Posts')
+    ax2.set_ylabel('Posts', color=color2)
+    ax2.tick_params(axis='y', labelcolor=color2)
     
-    # Adding labels and legend
-    plt.xlabel('Datetime')
-    plt.ylabel('Count')
-    plt.title('Number of Followers and Posts Over Time')
-    plt.legend()
+    # Add title
+    plt.title('Followers and Posts Over Time')
+    
+    # Add legends for both axes
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
     
     # Display the plot
     plt.xticks(rotation=45)
