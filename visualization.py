@@ -16,17 +16,17 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     # Load the CSV file
     df = pd.read_csv(file_path)
     
-    # Calculate followers gained per post
-    followers_gained = df['followers'].iloc[-1] - df['followers'].iloc[0]
-    posts_made = df['posts'].iloc[-1] - df['posts'].iloc[0]
+    # Calculate followers gained per post over visualization period
+    filtered_followers_gained = filtered_df['followers'].iloc[-1] - filtered_df['followers'].iloc[0]
+    filtered_posts_made = filtered_df['posts'].iloc[-1] - filtered_df['posts'].iloc[0]
     
-    if posts_made > 0 and followers_gained >= 0:
-        followers_per_post = followers_gained / posts_made
-        print(f"Followers gained: {followers_gained:,}")
-        print(f"New posts: {posts_made}")
+    if filtered_posts_made > 0 and filtered_followers_gained >= 0:
+        followers_per_post = filtered_followers_gained / filtered_posts_made
+        print(f"Followers gained in period: {filtered_followers_gained:,}")
+        print(f"New posts in period: {filtered_posts_made}")
         print(f"Followers gained per post: {followers_per_post:,.2f}")
     else:
-        print("Not enough data to calculate followers per post")
+        print("Not enough data to calculate followers per post for this period")
     
     # Convert datetime column to pandas datetime format
     df['datetime'] = pd.to_datetime(df['datetime'])
