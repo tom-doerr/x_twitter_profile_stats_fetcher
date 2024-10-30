@@ -5,8 +5,12 @@ import matplotlib.pyplot as plt
 import argparse
 import time
 from datetime import datetime
+from matplotlib.animation import FuncAnimation
 
-def plot_followers_and_posts(file_path, history_days):
+def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
+    # Clear the axes
+    ax1.clear()
+    ax2.clear()
     print(f"\nRefresh timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Load the CSV file
@@ -25,9 +29,6 @@ def plot_followers_and_posts(file_path, history_days):
     cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
     filtered_df = df[df['datetime'] >= cutoff_date]
     
-    # Create figure with two y-axes
-    fig, ax1 = plt.subplots(figsize=(10, 5))
-    ax2 = ax1.twinx()
     
     # Plot followers on primary y-axis
     color1 = '#1DA1F2'  # Twitter blue
@@ -53,10 +54,9 @@ def plot_followers_and_posts(file_path, history_days):
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
     
-    # Display the plot
+    # Update the plot
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
 
 if __name__ == "__main__":
     # Set up argument parser
@@ -66,9 +66,16 @@ if __name__ == "__main__":
     parser.add_argument('--refresh_interval', type=int, default=0, help='Refresh interval in seconds (default: 0, no refresh)')
     args = parser.parse_args()
     
-    # Continuously plot with specified refresh interval
-    while True:
-        plot_followers_and_posts(args.file_path, args.history_days)
-        if args.refresh_interval <= 0:
-            break
-        time.sleep(args.refresh_interval)
+    # Create figure with two y-axes
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+    ax2 = ax1.twinx()
+
+    def update(frame):
+        plot_followers_and_posts(args.file_path, args.history_days, fig, ax1, ax2)
+        
+    if args.refresh_interval > 0:
+        # Create animation that updates every refresh_interval milliseconds
+        ani = FuncAnimation(fig, update, interval=args.refresh_interval * 1000)
+        
+    plot_followers_and_posts(args.file_path, args.history_days, fig, ax1, ax2)
+    plt.show()
