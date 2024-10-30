@@ -29,7 +29,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     
     if filtered_posts_made > 0 and filtered_followers_gained >= 0:
         followers_per_post = filtered_followers_gained / filtered_posts_made
-        print(f"Followers gained in period: {int(filtered_followers_gained)}")
+        print(f"Followers gained in period: {filtered_followers_gained}")
         print(f"New posts in period: {int(filtered_posts_made)}")
         print(f"Followers gained per post: {int(followers_per_post)}")
     else:
