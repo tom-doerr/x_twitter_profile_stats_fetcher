@@ -37,17 +37,15 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     ax1.set_ylabel('Followers', color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     
-    # Format x-axis to show just the day number
-    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d\n%H:%M'))
+    # Format x-axis to show only 00:00 and 12:00
+    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%H:%M'))
+    ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(byhour=[0, 12]))
     
     # Plot posts on secondary y-axis
     color2 = '#17BF63'  # Twitter green
     ax2.plot(filtered_df['datetime'], filtered_df['posts'], color=color2, linewidth=2, label='Posts')
     ax2.set_ylabel('Posts', color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
-    
-    # Add title
-    plt.title('Followers and Posts Over Time')
     
     # Add legends for both axes
     lines1, labels1 = ax1.get_legend_handles_labels()
