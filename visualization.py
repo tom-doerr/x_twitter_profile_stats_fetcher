@@ -31,7 +31,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
         followers_per_post = filtered_followers_gained / filtered_posts_made
         print(f"Followers gained in period: {filtered_followers_gained}")
         print(f"New posts in period: {int(filtered_posts_made)}")
-        print(f"Followers gained per post: {int(followers_per_post)}")
+        print(f"Followers gained per post: {followers_per_post:.1f}")
     else:
         print("Not enough data to calculate followers per post for this period")
     
