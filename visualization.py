@@ -16,6 +16,13 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     # Load the CSV file
     df = pd.read_csv(file_path)
     
+    # Convert datetime column to pandas datetime format
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    
+    # Filter data to use only the specified history
+    cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
+    filtered_df = df[df['datetime'] >= cutoff_date]
+    
     # Calculate followers gained per post over visualization period
     filtered_followers_gained = filtered_df['followers'].iloc[-1] - filtered_df['followers'].iloc[0]
     filtered_posts_made = filtered_df['posts'].iloc[-1] - filtered_df['posts'].iloc[0]
@@ -27,13 +34,6 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
         print(f"Followers gained per post: {followers_per_post:,.2f}")
     else:
         print("Not enough data to calculate followers per post for this period")
-    
-    # Convert datetime column to pandas datetime format
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    
-    # Filter data to use only the specified history
-    cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
-    filtered_df = df[df['datetime'] >= cutoff_date]
     
     
     # Plot followers on primary y-axis
