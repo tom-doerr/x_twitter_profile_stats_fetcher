@@ -19,8 +19,14 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     # Calculate followers gained per post
     followers_gained = df['followers'].iloc[-1] - df['followers'].iloc[0]
     posts_made = df['posts'].iloc[-1] - df['posts'].iloc[0]
-    followers_per_post = followers_gained / posts_made if posts_made > 0 else 0
-    print(f"Followers gained per post: {followers_per_post:.2f}")
+    
+    if posts_made > 0 and followers_gained >= 0:
+        followers_per_post = followers_gained / posts_made
+        print(f"Followers gained: {followers_gained:,}")
+        print(f"New posts: {posts_made}")
+        print(f"Followers gained per post: {followers_per_post:,.2f}")
+    else:
+        print("Not enough data to calculate followers per post")
     
     # Convert datetime column to pandas datetime format
     df['datetime'] = pd.to_datetime(df['datetime'])
