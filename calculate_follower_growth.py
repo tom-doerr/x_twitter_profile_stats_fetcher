@@ -32,66 +32,99 @@ def calculate_growth_stats(account_name):
         reader = csv.DictReader(file)
         timestamp_key = next(key for key in reader.fieldnames if 'time' in key.lower())
         fol_key = next(key for key in reader.fieldnames if 'follower' in key.lower())
+        post_key = next(key for key in reader.fieldnames if 'post' in key.lower())
         for row in reader:
             timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
             fol = row[fol_key]
-            if fol != 'N/A':
-                data.append((timestamp, int(fol)))
+            posts = row[post_key]
+            if fol != 'N/A' and posts != 'N/A':
+                data.append((timestamp, int(fol), int(posts)))
 
     if len(data) < 2:
         return None
 
     data.sort(key=lambda x: x[0], reverse=True)  # Sort by timestamp, most recent first
 
-    current_time, current_fol = data[0]
+    current_time, current_fol, current_posts = data[0]
     
     def calculate_stats(hours):
         target_time = current_time - timedelta(hours=hours)
         closest_past = min(data[1:], key=lambda x: abs(x[0] - target_time))
-        past_time, past_fol = closest_past
+        past_time, past_fol, past_posts = closest_past
         time_diff = (current_time - past_time).total_seconds() / 86400  # Convert to days
         fol_diff = current_fol - past_fol
-        growth_rate = fol_diff / time_diff
-        return int(fol_diff), growth_rate
+        post_diff = current_posts - past_posts
+        fol_growth_rate = fol_diff / time_diff
+        post_growth_rate = post_diff / time_diff
+        return int(fol_diff), fol_growth_rate, int(post_diff), post_growth_rate
 
-    hourly_diff, hourly_rate = calculate_stats(1)
-    six_hour_diff, six_hour_rate = calculate_stats(6)
-    daily_diff, daily_rate = calculate_stats(24)
-    weekly_diff, weekly_rate = calculate_stats(24 * 7)
+    hourly_fol_diff, hourly_fol_rate, hourly_post_diff, hourly_post_rate = calculate_stats(1)
+    six_hour_fol_diff, six_hour_fol_rate, six_hour_post_diff, six_hour_post_rate = calculate_stats(6)
+    daily_fol_diff, daily_fol_rate, daily_post_diff, daily_post_rate = calculate_stats(24)
+    weekly_fol_diff, weekly_fol_rate, weekly_post_diff, weekly_post_rate = calculate_stats(24 * 7)
 
     return {
         'current_time': current_time,
         'current_fol': current_fol,
-        'hourly': {'diff': hourly_diff, 'rate': hourly_rate},
-        'six_hour': {'diff': six_hour_diff, 'rate': six_hour_rate},
-        'daily': {'diff': daily_diff, 'rate': daily_rate},
-        'weekly': {'diff': weekly_diff, 'rate': weekly_rate}
+        'current_posts': current_posts,
+        'hourly': {
+            'fol_diff': hourly_fol_diff, 'fol_rate': hourly_fol_rate,
+            'post_diff': hourly_post_diff, 'post_rate': hourly_post_rate
+        },
+        'six_hour': {
+            'fol_diff': six_hour_fol_diff, 'fol_rate': six_hour_fol_rate,
+            'post_diff': six_hour_post_diff, 'post_rate': six_hour_post_rate
+        },
+        'daily': {
+            'fol_diff': daily_fol_diff, 'fol_rate': daily_fol_rate,
+            'post_diff': daily_post_diff, 'post_rate': daily_post_rate
+        },
+        'weekly': {
+            'fol_diff': weekly_fol_diff, 'fol_rate': weekly_fol_rate,
+            'post_diff': weekly_post_diff, 'post_rate': weekly_post_rate
+        }
     }
 
-def display_stats(stats):
+def display_follower_stats(stats):
     print(f"{Fore.BLUE}Timestamp: {Style.BRIGHT}{stats['current_time']:%Y-%m-%d %H:%M:%S}")
     print(f"{Fore.GREEN}Current Fol: {Style.BRIGHT}{stats['current_fol']:,}")
     print()
 
     table_data = [
         ["Period", "NF", "   GR day", "   GR week"],
-        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['rate'] * 7):>10,}{Fore.CYAN}"],
-        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['rate'] * 7):>10,}{Fore.CYAN}"],
-        ["24-hour", f"{Fore.YELLOW}{stats['daily']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['rate'] * 7):>10,}{Fore.CYAN}"],
-        ["7-day", f"{Fore.YELLOW}{stats['weekly']['diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['rate'] * 7):>10,}{Fore.CYAN}"]
+        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["24-hour", f"{Fore.YELLOW}{stats['daily']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["7-day", f"{Fore.YELLOW}{stats['weekly']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['fol_rate'] * 7):>10,}{Fore.CYAN}"]
+    ]
+
+    table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
+    print(f"{Fore.CYAN}{table}")
+
+def display_post_stats(stats):
+    print(f"\n{Fore.GREEN}Current Posts: {Style.BRIGHT}{stats['current_posts']:,}")
+    print()
+
+    table_data = [
+        ["Period", "NP", "   GR day", "   GR week"],
+        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["24-hour", f"{Fore.YELLOW}{stats['daily']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate'] * 7):>10,}{Fore.CYAN}"],
+        ["7-day", f"{Fore.YELLOW}{stats['weekly']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['post_rate'] * 7):>10,}{Fore.CYAN}"]
     ]
 
     table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
     print(f"{Fore.CYAN}{table}")
 
 def main():
-    if len(sys.argv) < 2 or len(sys.argv) > 5:
-        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds] [--plot]")
+    if len(sys.argv) < 2 or len(sys.argv) > 6:
+        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds] [--plot] [--posts]")
         sys.exit(1)
 
     account_name = sys.argv[1]
     refresh_mode = "--refresh" in sys.argv
     plot_mode = "--plot" in sys.argv
+    show_posts = "--posts" in sys.argv
     interval = 60  # Default interval
 
     if refresh_mode and len(sys.argv) >= 4:
@@ -109,7 +142,9 @@ def main():
             else:
                 # Clear the console (works for both Windows and Unix-like systems)
                 print("\033[H\033[J", end="")
-                display_stats(stats)
+                display_follower_stats(stats)
+                if show_posts:
+                    display_post_stats(stats)
 
                 if plot_mode:
                     plot_daily_gains(account_name)
