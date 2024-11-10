@@ -248,7 +248,9 @@ def find_stats_by_js(driver):
             stats['interaction_context'] = next_ten_chars
             
         # Get posts count using extract_interaction
+        print('Getting posts count...')
         posts_count = extract_interaction(html_file, "statuses_count")
+        print("posts_count:", posts_count)
         if posts_count:
             stats['posts'] = posts_count
             log_with_limit(f"Found posts count: {stats['posts']}")
