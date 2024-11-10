@@ -3,12 +3,13 @@
 import re
 import os
 
-def extract_interaction(html_file):
+def extract_interaction(html_file, interaction_type="userInteractionCount"):
     """
-    Extract userInteractionCount from an HTML file.
+    Extract interaction count from an HTML file.
     
     Args:
         html_file (str): Path to the HTML file to process
+        interaction_type (str): Type of interaction to extract (userInteractionCount or statuses_count)
         
     Returns:
         int: The interaction count if found, None otherwise
@@ -17,7 +18,8 @@ def extract_interaction(html_file):
         with open(html_file, 'r', encoding='utf-8') as f:
             content = f.read()
             
-        match = re.search(r'"userInteractionCount":(\d+)', content)
+        pattern = f'"{interaction_type}":(\d+)'
+        match = re.search(pattern, content)
         if match:
             return int(match.group(1))
         return None
