@@ -15,13 +15,31 @@ def extract_interaction(html_file, interaction_type="userInteractionCount"):
         int: The interaction count if found, None otherwise
     """
     try:
+        print(f"DEBUG: Opening file {html_file}")
         with open(html_file, 'r', encoding='utf-8') as f:
             content = f.read()
+        print(f"DEBUG: Read {len(content)} characters")
             
         pattern = f'"{interaction_type}":(\d+)'
+        print(f"DEBUG: Searching for pattern: {pattern}")
+        
+        # Print 100 chars around any potential match
+        index = content.find(interaction_type)
+        if index != -1:
+            start = max(0, index - 50)
+            end = min(len(content), index + 50)
+            context = content[start:end]
+            print(f"DEBUG: Found {interaction_type} context: ...{context}...")
+        else:
+            print(f"DEBUG: {interaction_type} not found in content")
+            
         match = re.search(pattern, content)
         if match:
-            return int(match.group(1))
+            result = int(match.group(1))
+            print(f"DEBUG: Found match: {result}")
+            return result
+            
+        print(f"DEBUG: No match found for {interaction_type}")
         return None
     except Exception as e:
         print(f"Error processing {html_file}: {str(e)}")
