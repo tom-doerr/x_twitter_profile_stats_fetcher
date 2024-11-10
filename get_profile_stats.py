@@ -247,18 +247,23 @@ def find_stats_by_js(driver):
             print(f"\n{Fore.YELLOW}10 chars after userInteractionCount:{Style.RESET_ALL} {next_ten_chars}")
             stats['interaction_context'] = next_ten_chars
             
-        # Look for all stats in the page source
-        patterns = {
-            'following': r'"friends_count":(\d+)',
-            'posts': r'"statuses_count":(\d+)'
-        }
-        
-        for stat_name, pattern in patterns.items():
-            match = re.search(pattern, page_source)
-            if match:
-                stats[stat_name] = int(match.group(1))
-                log_with_limit(f"Found {stat_name} count: {stats[stat_name]}")
-                print(f"\n{Fore.GREEN}{stat_name.capitalize()} found in JSON:{Style.RESET_ALL} {stats[stat_name]:,}")
+        # Look for posts count by splitting
+        if 'statuses_count' in page_source:
+            try:
+                posts_part = page_source.split('statuses_count":')[1]
+                posts_count = int(posts_part.split(',')[0])
+                stats['posts'] = posts_count
+                log_with_limit(f"Found posts count: {stats['posts']}")
+                print(f"\n{Fore.GREEN}Posts found in JSON:{Style.RESET_ALL} {stats['posts']:,}")
+            except Exception as e:
+                log_with_limit(f"Error extracting posts count: {e}")
+
+        # Look for following count
+        following_match = re.search(r'"friends_count":(\d+)', page_source)
+        if following_match:
+            stats['following'] = int(following_match.group(1))
+            log_with_limit(f"Found following count: {stats['following']}")
+            print(f"\n{Fore.GREEN}Following found in JSON:{Style.RESET_ALL} {stats['following']:,}")
 
         # Return stats if we found any stats (we'll collect followers separately)
         if stats:
