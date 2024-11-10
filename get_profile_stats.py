@@ -249,20 +249,22 @@ def find_stats_by_js(driver):
             
         # Look for following and posts counts
         if 'followers' in stats:
+            # Look for following count
             following_pattern = r'"friends_count":(\d+)'
             following_match = re.search(following_pattern, page_source)
             if following_match:
                 stats['following'] = int(following_match.group(1))
                 log_with_limit(f"Found following count: {stats['following']}")
             
+            # Look for posts count (statuses)
             posts_pattern = r'"statuses_count":(\d+)'
             posts_match = re.search(posts_pattern, page_source)
             if posts_match:
                 stats['posts'] = int(posts_match.group(1))
-                log_with_limit(f"Found posts count: {stats['posts']}")
+                log_with_limit(f"Found posts count (statuses): {stats['posts']}")
 
-        # If we found all stats, return them
-        if len(stats) >= 2:  # At least followers and one other stat
+        # Return stats if we found at least followers and one other stat
+        if len(stats) >= 2:
             log_with_limit(f"Successfully found stats in JSON: {stats}")
             return stats
 
@@ -357,7 +359,10 @@ def get_text_by_xpath(driver, xpath):
 
 def print_pretty_stats(profile_stats):
     print(f"\n{Fore.CYAN}=== Profile Stats ==={Style.RESET_ALL}")
-    print(f"{Fore.GREEN}Posts:{Style.RESET_ALL} {profile_stats.get('posts', 'N/A')}")
+    posts = profile_stats.get('posts', 'N/A')
+    if posts != 'N/A':
+        posts = f"{posts:,}"  # Add thousands separator
+    print(f"{Fore.GREEN}Posts (Statuses):{Style.RESET_ALL} {posts}")
     print(f"{Fore.GREEN}Following:{Style.RESET_ALL} {profile_stats.get('following', 'N/A')}")
     print(f"{Fore.GREEN}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
     if profile_stats.get('interaction_context'):
