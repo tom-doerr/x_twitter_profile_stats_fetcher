@@ -247,24 +247,20 @@ def find_stats_by_js(driver):
             print(f"\n{Fore.YELLOW}10 chars after userInteractionCount:{Style.RESET_ALL} {next_ten_chars}")
             stats['interaction_context'] = next_ten_chars
             
-        # Look for following and posts counts
-        if 'followers' in stats:
-            # Look for following count
-            following_pattern = r'"friends_count":(\d+)'
-            following_match = re.search(following_pattern, page_source)
-            if following_match:
-                stats['following'] = int(following_match.group(1))
-                log_with_limit(f"Found following count: {stats['following']}")
-            
-            # Look for posts count (statuses)
-            posts_pattern = r'"statuses_count":(\d+)'
-            posts_match = re.search(posts_pattern, page_source)
-            if posts_match:
-                stats['posts'] = int(posts_match.group(1))
-                log_with_limit(f"Found posts count (statuses): {stats['posts']}")
+        # Look for all stats in the page source
+        patterns = {
+            'following': r'"friends_count":(\d+)',
+            'posts': r'"statuses_count":(\d+)'
+        }
+        
+        for stat_name, pattern in patterns.items():
+            match = re.search(pattern, page_source)
+            if match:
+                stats[stat_name] = int(match.group(1))
+                log_with_limit(f"Found {stat_name} count: {stats[stat_name]}")
 
-        # Return stats if we found at least followers and one other stat
-        if len(stats) >= 2:
+        # Return stats if we found at least two stats (including followers)
+        if 'followers' in stats and len(stats) >= 2:
             log_with_limit(f"Successfully found stats in JSON: {stats}")
             return stats
 
