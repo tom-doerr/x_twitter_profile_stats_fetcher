@@ -251,7 +251,9 @@ def find_stats_by_js(driver):
         if 'statuses_count' in page_source:
             try:
                 posts_part = page_source.split('statuses_count":')[1]
-                posts_count = int(posts_part.split(',')[0])
+                raw_count = posts_part.split(',')[0]
+                print(f"\n{Fore.YELLOW}Raw value after statuses_count:{Style.RESET_ALL} {raw_count}")
+                posts_count = int(raw_count)
                 stats['posts'] = posts_count
                 log_with_limit(f"Found posts count: {stats['posts']}")
                 print(f"\n{Fore.GREEN}Posts found in JSON:{Style.RESET_ALL} {stats['posts']:,}")
