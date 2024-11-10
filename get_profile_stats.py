@@ -250,11 +250,17 @@ def find_stats_by_js(driver):
         # Get posts count using extract_interaction
         print('Getting posts count...')
         posts_count = extract_interaction(html_file, "statuses_count")
-        print("posts_count:", posts_count)
         if posts_count:
             stats['posts'] = posts_count
             log_with_limit(f"Found posts count: {stats['posts']}")
             print(f"\n{Fore.GREEN}Posts found:{Style.RESET_ALL} {stats['posts']:,}")
+        else:
+            # Try alternate method to get posts count
+            posts_count = extract_interaction(html_file, "tweet_count")
+            if posts_count:
+                stats['posts'] = posts_count
+                log_with_limit(f"Found posts count from tweet_count: {stats['posts']}")
+                print(f"\n{Fore.GREEN}Posts found from tweet_count:{Style.RESET_ALL} {stats['posts']:,}")
 
         # Look for following count
         following_match = re.search(r'"friends_count":(\d+)', page_source)
