@@ -2,6 +2,9 @@
 
 import re
 import os
+from colorama import Fore, Style, init
+
+init()  # Initialize colorama
 
 def extract_interaction(html_file, interaction_type="userInteractionCount", debug=False):
     """
