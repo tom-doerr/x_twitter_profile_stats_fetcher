@@ -81,17 +81,27 @@ def get_profile_stats(driver, url):
             logger.error("Profile not accessible: Protected tweets")
             return None
 
-        # Get initial stats from visible elements
-        stats = find_stats_by_xpath(driver)
-        
-        # Save profile HTML and extract accurate follower count
+        # Save profile HTML first to get accurate counts
         html_file = save_profile_html(driver, driver.current_url.split('/')[-1])
+        
+        # Try to get stats from JSON in page source first
+        stats = find_stats_by_js(driver) or {}
+        
+        # Get additional stats from visible elements
+        xpath_stats = find_stats_by_xpath(driver)
+        if xpath_stats:
+            # Only use xpath stats for values we don't already have
+            for key, value in xpath_stats.items():
+                if key not in stats or not stats[key]:
+                    stats[key] = value
+        
+        # Update followers count if we can get it from userInteractionCount
         followers_count = extract_interaction(html_file)
         if followers_count:
             stats['followers'] = followers_count
             log_with_limit(f"Updated followers count from userInteractionCount: {followers_count}")
 
-        if stats and all(stats.values()):
+        if stats and ('followers' in stats):  # As long as we have followers, return what we found
             return stats
 
         return None
@@ -122,7 +132,6 @@ def find_stats_by_xpath(driver):
     """Find stats using specific XPaths and search for posts, following, and followers."""
     stats = {}
     xpaths = {
-        'posts': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[1]/div[1]/div/div/div/div/div/div[2]/div/div',
         'following': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[1]/a/span[1]/span',
         'followers': '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div/div/div/div[5]/div[2]/a/span[1]/span'
     }
@@ -238,17 +247,23 @@ def find_stats_by_js(driver):
             print(f"\n{Fore.YELLOW}10 chars after userInteractionCount:{Style.RESET_ALL} {next_ten_chars}")
             stats['interaction_context'] = next_ten_chars
             
-        # If we found followers, also look for following count
+        # Look for following and posts counts
         if 'followers' in stats:
             following_pattern = r'"friends_count":(\d+)'
             following_match = re.search(following_pattern, page_source)
             if following_match:
                 stats['following'] = int(following_match.group(1))
                 log_with_limit(f"Found following count: {stats['following']}")
+            
+            posts_pattern = r'"statuses_count":(\d+)'
+            posts_match = re.search(posts_pattern, page_source)
+            if posts_match:
+                stats['posts'] = int(posts_match.group(1))
+                log_with_limit(f"Found posts count: {stats['posts']}")
 
-        # If we found both stats, return them
-        if len(stats) == 2:
-            log_with_limit(f"Successfully found both stats in JSON: {stats}")
+        # If we found all stats, return them
+        if len(stats) >= 2:  # At least followers and one other stat
+            log_with_limit(f"Successfully found stats in JSON: {stats}")
             return stats
 
         # Fall back to the original JS method if JSON parsing failed
