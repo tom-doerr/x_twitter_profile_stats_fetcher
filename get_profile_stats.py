@@ -247,18 +247,12 @@ def find_stats_by_js(driver):
             print(f"\n{Fore.YELLOW}10 chars after userInteractionCount:{Style.RESET_ALL} {next_ten_chars}")
             stats['interaction_context'] = next_ten_chars
             
-        # Look for posts count by splitting
-        if 'statuses_count' in page_source:
-            try:
-                posts_part = page_source.split('statuses_count":')[1]
-                raw_count = posts_part.split(',')[0]
-                print(f"\n{Fore.YELLOW}Raw value after statuses_count:{Style.RESET_ALL} {raw_count}")
-                posts_count = int(raw_count)
-                stats['posts'] = posts_count
-                log_with_limit(f"Found posts count: {stats['posts']}")
-                print(f"\n{Fore.GREEN}Posts found in JSON:{Style.RESET_ALL} {stats['posts']:,}")
-            except Exception as e:
-                log_with_limit(f"Error extracting posts count: {e}")
+        # Get posts count using extract_interaction
+        posts_count = extract_interaction(html_file, "statuses_count")
+        if posts_count:
+            stats['posts'] = posts_count
+            log_with_limit(f"Found posts count: {stats['posts']}")
+            print(f"\n{Fore.GREEN}Posts found:{Style.RESET_ALL} {stats['posts']:,}")
 
         # Look for following count
         following_match = re.search(r'"friends_count":(\d+)', page_source)
