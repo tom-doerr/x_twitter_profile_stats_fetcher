@@ -258,9 +258,10 @@ def find_stats_by_js(driver):
             if match:
                 stats[stat_name] = int(match.group(1))
                 log_with_limit(f"Found {stat_name} count: {stats[stat_name]}")
+                print(f"\n{Fore.GREEN}{stat_name.capitalize()} found in JSON:{Style.RESET_ALL} {stats[stat_name]:,}")
 
-        # Return stats if we found at least two stats (including followers)
-        if 'followers' in stats and len(stats) >= 2:
+        # Return stats if we found any stats (we'll collect followers separately)
+        if stats:
             log_with_limit(f"Successfully found stats in JSON: {stats}")
             return stats
 
