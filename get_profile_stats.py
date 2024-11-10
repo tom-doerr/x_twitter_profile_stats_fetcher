@@ -250,6 +250,7 @@ def find_stats_by_js(driver):
         # Get posts count using extract_interaction with debug enabled for both attempts
         print(f'\n{Fore.CYAN}=== Attempting Posts Count Extraction ==={Style.RESET_ALL}')
         print(f'{Fore.YELLOW}Method 1: Trying statuses_count...{Style.RESET_ALL}')
+        print(f"{Fore.CYAN}Searching HTML file for 'statuses_count' pattern...{Style.RESET_ALL}")
         posts_count = extract_interaction(html_file, "statuses_count", debug=True)
         print(f'{Fore.YELLOW}statuses_count result: {posts_count}{Style.RESET_ALL}')
         
@@ -259,6 +260,7 @@ def find_stats_by_js(driver):
             print(f"\n{Fore.GREEN}Posts found from statuses_count:{Style.RESET_ALL} {stats['posts']:,}")
         else:
             print(f'{Fore.YELLOW}statuses_count not found, trying tweet_count...{Style.RESET_ALL}')
+            print(f"{Fore.CYAN}Searching HTML file for 'tweet_count' pattern...{Style.RESET_ALL}")
             posts_count = extract_interaction(html_file, "tweet_count", debug=True)  # Added debug=True here
             print(f'{Fore.YELLOW}tweet_count result: {posts_count}{Style.RESET_ALL}')
             
