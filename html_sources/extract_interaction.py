@@ -3,7 +3,7 @@
 import re
 import os
 
-def extract_interaction(html_file, interaction_type="userInteractionCount"):
+def extract_interaction(html_file, interaction_type="userInteractionCount", debug=False):
     """
     Extract interaction count from an HTML file.
     
@@ -15,13 +15,16 @@ def extract_interaction(html_file, interaction_type="userInteractionCount"):
         int: The interaction count if found, None otherwise
     """
     try:
-        print(f"DEBUG: Opening file {html_file}")
+        if debug:
+            print(f"\n{Fore.CYAN}DEBUG: Opening file {html_file}{Style.RESET_ALL}")
         with open(html_file, 'r', encoding='utf-8') as f:
             content = f.read()
-        print(f"DEBUG: Read {len(content)} characters")
+        if debug:
+            print(f"{Fore.CYAN}DEBUG: Read {len(content):,} characters{Style.RESET_ALL}")
             
         pattern = f'"{interaction_type}":(\d+)'
-        print(f"DEBUG: Searching for pattern: {pattern}")
+        if debug:
+            print(f"{Fore.CYAN}DEBUG: Searching for pattern: {pattern}{Style.RESET_ALL}")
         
         # Print 100 chars around any potential match
         index = content.find(interaction_type)
@@ -29,17 +32,21 @@ def extract_interaction(html_file, interaction_type="userInteractionCount"):
             start = max(0, index - 50)
             end = min(len(content), index + 50)
             context = content[start:end]
-            print(f"DEBUG: Found {interaction_type} context: ...{context}...")
+            if debug:
+                print(f"{Fore.CYAN}DEBUG: Found {interaction_type} context: ...{context}...{Style.RESET_ALL}")
         else:
-            print(f"DEBUG: {interaction_type} not found in content")
+            if debug:
+                print(f"{Fore.RED}DEBUG: {interaction_type} not found in content{Style.RESET_ALL}")
             
         match = re.search(pattern, content)
         if match:
             result = int(match.group(1))
-            print(f"DEBUG: Found match: {result}")
+            if debug:
+                print(f"{Fore.GREEN}DEBUG: Found match: {result:,}{Style.RESET_ALL}")
             return result
             
-        print(f"DEBUG: No match found for {interaction_type}")
+        if debug:
+            print(f"{Fore.RED}DEBUG: No match found for {interaction_type}{Style.RESET_ALL}")
         return None
     except Exception as e:
         print(f"Error processing {html_file}: {str(e)}")

@@ -248,9 +248,9 @@ def find_stats_by_js(driver):
             stats['interaction_context'] = next_ten_chars
             
         # Get posts count using extract_interaction
-        print(f'{Fore.CYAN}Attempting to extract posts count...{Style.RESET_ALL}')
-        print(f'{Fore.YELLOW}Trying statuses_count first...{Style.RESET_ALL}')
-        posts_count = extract_interaction(html_file, "statuses_count")
+        print(f'\n{Fore.CYAN}=== Attempting Posts Count Extraction ==={Style.RESET_ALL}')
+        print(f'{Fore.YELLOW}Method 1: Trying statuses_count...{Style.RESET_ALL}')
+        posts_count = extract_interaction(html_file, "statuses_count", debug=True)
         print(f'{Fore.YELLOW}statuses_count result: {posts_count}{Style.RESET_ALL}')
         
         if posts_count:
