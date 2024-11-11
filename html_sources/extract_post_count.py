@@ -51,32 +51,27 @@ def extract_post_count(html_file, debug=False):
                 else:
                     print(f"\n{Fore.RED}'{term}' not found in content{Style.RESET_ALL}")
 
-        # Try multiple pattern variations like extract_interaction.py
-        patterns = [
-            f'"{search_terms[0]}":(\d+)',  # Standard JSON format
-            f'{search_terms[0]}":(\d+)',   # Possible HTML-escaped quotes
-            f'{search_terms[0]}=(\d+)',    # Possible attribute format
-            f'"{search_terms[1]}":(\d+)',  # Try second term in JSON format
-            f'{search_terms[1]}":(\d+)',   # Second term with escaped quotes
-            f'{search_terms[1]}=(\d+)',    # Second term as attribute
-        ]
+        # Look for post count in InteractionCounter section
+        pattern = r'"name":"Tweets","userInteractionCount":(\d+)'
+        if debug:
+            print(f"\n{Fore.CYAN}Looking for Tweets InteractionCounter{Style.RESET_ALL}")
+            print(f"Using pattern: {pattern}")
         
         if debug:
             print(f"\n{Fore.CYAN}Step 3: Pattern matching{Style.RESET_ALL}")
             for p in patterns:
                 print(f"Trying pattern: {p}")
 
-        # Try each pattern
-        for pattern in patterns:
-            match = re.search(pattern, content)
-            if match:
-                result = int(match.group(1))
-                if debug:
-                    print(f"\n{Fore.GREEN}Success: Found match with pattern: {pattern}{Style.RESET_ALL}")
-                    print(f"Value: {result:,}")
-                return result
-            elif debug:
-                print(f"{Fore.YELLOW}No match for pattern: {pattern}{Style.RESET_ALL}")
+        # Try to find the pattern
+        match = re.search(pattern, content)
+        if match:
+            result = int(match.group(1))
+            if debug:
+                print(f"\n{Fore.GREEN}Success: Found post count in InteractionCounter{Style.RESET_ALL}")
+                print(f"Value: {result:,}")
+            return result
+        elif debug:
+            print(f"{Fore.RED}No InteractionCounter found for Tweets{Style.RESET_ALL}")
 
         if debug:
             print(f"\n{Fore.RED}No post count found with any pattern{Style.RESET_ALL}")
