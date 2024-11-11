@@ -37,23 +37,25 @@ def extract_post_count(html_file, debug=False):
             if debug:
                 print(f"{Fore.GREEN}Successfully read {len(content):,} characters{Style.RESET_ALL}")
 
+        # First check if strings exist at all
+        search_terms = ['tweet_count', 'statuses_count']
+        for term in search_terms:
+            index = content.find(term)
+            if debug:
+                if index != -1:
+                    start = max(0, index - 100)
+                    end = min(len(content), index + 100)
+                    context = content[start:end]
+                    print(f"\n{Fore.CYAN}Found '{term}' at position {index}{Style.RESET_ALL}")
+                    print(f"Context: ...{context}...")
+                else:
+                    print(f"\n{Fore.RED}'{term}' not found in content{Style.RESET_ALL}")
+
         # Pattern matches "tweet_count":number or "statuses_count":number
         patterns = [r'"tweet_count":(\d+)', r'"statuses_count":(\d+)']
-        
         for pattern in patterns:
             if debug:
-                print(f"{Fore.YELLOW}Trying pattern:{Style.RESET_ALL} {pattern}")
-
-            # Show context around the search term
-            search_term = pattern.split(':')[0].strip('"')
-            index = content.find(search_term)
-            if index != -1 and debug:
-                start = max(0, index - 100)  # Increased context to 100 chars
-                end = min(len(content), index + 100)
-                context = content[start:end]
-                print(f"\n{Fore.CYAN}Found '{search_term}' at position {index}{Style.RESET_ALL}")
-                print(f"Context: ...{context}...")
-
+                print(f"\n{Fore.YELLOW}Trying pattern:{Style.RESET_ALL} {pattern}")
             match = re.search(pattern, content)
             if match:
                 count = int(match.group(1))
