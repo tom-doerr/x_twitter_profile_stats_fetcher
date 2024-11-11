@@ -59,8 +59,7 @@ def extract_post_count(html_file, debug=False):
         
         if debug:
             print(f"\n{Fore.CYAN}Step 3: Pattern matching{Style.RESET_ALL}")
-            for p in patterns:
-                print(f"Trying pattern: {p}")
+            print(f"Using pattern: {pattern}")
 
         # Try to find the pattern
         match = re.search(pattern, content)
