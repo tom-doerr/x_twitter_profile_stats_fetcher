@@ -14,6 +14,9 @@ from datetime import datetime
 import os
 import argparse
 from colorama import init, Fore, Style
+# traceback
+
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -225,11 +228,16 @@ def save_page_source(driver, username):
 
 def find_stats_by_js(driver):
     """Find stats using JavaScript execution and page source parsing."""
+    print('inside find_stats_by_js')
     stats = {}
     try:
+        print(f"\n{Fore.CYAN}=== Attempting JSON Parsing ==={Style.RESET_ALL}")
         # Save page source locally
+        print('getting username')
         username = driver.current_url.split('/')[-1]
+        print('save_page_source')
         html_file = save_page_source(driver, username)
+        
         log_with_limit(f"Saved page source to {html_file}")
 
         # Read and analyze the page source first
@@ -331,6 +339,9 @@ def find_stats_by_js(driver):
             log_with_limit(f"Stats found in page source JSON: {stats}")
             
     except Exception as e:
+        print("e:", e)
+        # print stacktrace
+        traceback.print_exc()
         log_with_limit(f"Failed to find stats by JavaScript and JSON parsing: {str(e)}")
     return stats if stats else None
 
