@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 from html_sources.extract_interaction import extract_interaction
+from html_sources.extract_post_count import extract_post_count
 import logging
 import traceback
 import time
@@ -87,9 +88,13 @@ def get_profile_stats(driver, url):
         # Save profile HTML first to get accurate counts
         html_file = save_profile_html(driver, driver.current_url.split('/')[-1])
         
-        # Try to get stats from JSON in page source first
-        stats = find_stats_by_js(driver) or {}
-        
+        # Get post count first using extract_post_count
+        posts_count = extract_post_count(html_file, debug=True)
+        if posts_count:
+            stats = {'posts': posts_count}
+        else:
+            stats = {}
+            
         # Get additional stats from visible elements
         xpath_stats = find_stats_by_xpath(driver)
         if xpath_stats:
