@@ -142,10 +142,16 @@ def download_profile_html(username):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Extract post count from X/Twitter profile")
     parser.add_argument("username", nargs="?", help="X/Twitter username (without @)")
+    parser.add_argument("--download", action="store_true", help="Download fresh profile HTML")
     args = parser.parse_args()
     
     if args.username:
-        html_file = download_profile_html(args.username)
+        html_file = f"html_sources/{args.username}_profile.html"
+        if args.download or not os.path.exists(html_file):
+            html_file = download_profile_html(args.username)
+            if not html_file:
+                print(f"\n{Fore.RED}Failed to download profile HTML{Style.RESET_ALL}")
+                exit(1)
     else:
         html_file = get_latest_profile_html()
         
