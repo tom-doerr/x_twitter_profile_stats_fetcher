@@ -32,13 +32,23 @@ def extract_interaction(html_file, interaction_type="userInteractionCount", debu
         if debug:
             print(f"{Fore.GREEN}Success: Read {len(content):,} characters{Style.RESET_ALL}")
             
-        pattern = f'"{interaction_type}":(\d+)'
-        if debug:
-            print(f"\n{Fore.CYAN}Step 2: Pattern matching{Style.RESET_ALL}")
-            print(f"Using pattern: {pattern}")
-        
-        # Print context around any potential match
+        # First look for the raw string without quotes
         index = content.find(interaction_type)
+        if debug:
+            print(f"\n{Fore.CYAN}Step 2: Initial string search{Style.RESET_ALL}")
+            print(f"Searching for raw string: {interaction_type}")
+            
+        # Try multiple pattern variations
+        patterns = [
+            f'"{interaction_type}":(\d+)',  # Standard JSON format
+            f'{interaction_type}":(\d+)',   # Possible HTML-escaped quotes
+            f'{interaction_type}=(\d+)',    # Possible attribute format
+        ]
+        
+        if debug:
+            print(f"\n{Fore.CYAN}Step 3: Pattern matching{Style.RESET_ALL}")
+            for p in patterns:
+                print(f"Trying pattern: {p}")
         if index != -1:
             start = max(0, index - 100)  # Increased context to 100 chars
             end = min(len(content), index + 100)
@@ -51,16 +61,20 @@ def extract_interaction(html_file, interaction_type="userInteractionCount", debu
             if debug:
                 print(f"\n{Fore.RED}Warning: Search term '{interaction_type}' not found in content{Style.RESET_ALL}")
             
-        match = re.search(pattern, content)
-        if match:
-            result = int(match.group(1))
-            if debug:
-                print(f"\n{Fore.GREEN}Success: Found match!{Style.RESET_ALL}")
-                print(f"Value: {result:,}")
-            return result
-            
+        # Try each pattern
+        for pattern in patterns:
+            match = re.search(pattern, content)
+            if match:
+                result = int(match.group(1))
+                if debug:
+                    print(f"\n{Fore.GREEN}Success: Found match with pattern: {pattern}{Style.RESET_ALL}")
+                    print(f"Value: {result:,}")
+                return result
+            elif debug:
+                print(f"{Fore.YELLOW}No match for pattern: {pattern}{Style.RESET_ALL}")
+        
         if debug:
-            print(f"\n{Fore.RED}Error: No match found for pattern: {pattern}{Style.RESET_ALL}")
+            print(f"\n{Fore.RED}Error: No matches found with any pattern{Style.RESET_ALL}")
             print("Returning None")
         return None
     except Exception as e:
