@@ -37,8 +37,9 @@ def calculate_growth_stats(account_name):
             timestamp = datetime.fromisoformat(row[timestamp_key].replace('Z', '+00:00'))
             fol = row[fol_key]
             posts = row[post_key]
-            if fol != 'N/A' and posts != 'N/A':
-                data.append((timestamp, int(fol), int(posts)))
+            if fol != 'N/A':
+                post_count = 0 if posts == '' or posts == 'N/A' else int(posts)
+                data.append((timestamp, int(fol), post_count))
 
     if len(data) < 2:
         return None
@@ -107,10 +108,10 @@ def display_post_stats(stats):
 
     table_data = [
         ["Period", "NP", "   GR day", "   GR week"],
-        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate'] * 7):>10,}{Fore.CYAN}"],
-        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate'] * 7):>10,}{Fore.CYAN}"],
-        ["24-hour", f"{Fore.YELLOW}{stats['daily']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate'] * 7):>10,}{Fore.CYAN}"],
-        ["7-day", f"{Fore.YELLOW}{stats['weekly']['post_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['post_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['post_rate'] * 7):>10,}{Fore.CYAN}"]
+        ["1-hour", f"{Fore.YELLOW}{stats['hourly']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['hourly']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
+        ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['six_hour']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
+        ["24-hour", f"{Fore.YELLOW}{stats['daily']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['daily']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
+        ["7-day", f"{Fore.YELLOW}{stats['weekly']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['weekly']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['weekly']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"]
     ]
 
     table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
