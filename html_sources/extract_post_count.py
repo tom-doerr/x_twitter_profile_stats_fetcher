@@ -56,6 +56,8 @@ def extract_post_count(html_file, debug=False):
         for pattern in patterns:
             if debug:
                 print(f"\n{Fore.YELLOW}Trying pattern:{Style.RESET_ALL} {pattern}")
+            # Extract search term from pattern for debug output
+            search_term = pattern.split('"')[1]  # Gets term between quotes
             match = re.search(pattern, content)
             if match:
                 count = int(match.group(1))
