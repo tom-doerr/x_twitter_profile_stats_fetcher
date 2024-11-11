@@ -391,8 +391,6 @@ def get_text_by_xpath(driver, xpath):
 def print_pretty_stats(profile_stats):
     print(f"\n{Fore.CYAN}=== Profile Stats ==={Style.RESET_ALL}")
     posts = profile_stats.get('posts', 'N/A')
-    if posts != 'N/A':
-        posts = f"{posts:,}"  # Add thousands separator
     print(f"{Fore.GREEN}Posts (Statuses):{Style.RESET_ALL} {posts}")
     print(f"{Fore.GREEN}Following:{Style.RESET_ALL} {profile_stats.get('following', 'N/A')}")
     print(f"{Fore.GREEN}Followers:{Style.RESET_ALL} {profile_stats.get('followers', 'N/A')}")
