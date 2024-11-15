@@ -153,29 +153,8 @@ def main():
 
             time.sleep(args.refresh)
 
-    try:
-        while True:
-            stats = calculate_growth_stats(account_name)
-
-            if stats is None:
-                print(f"{Fore.RED}Not enough data to calculate growth statistics.")
-            else:
-                # Clear the console (works for both Windows and Unix-like systems)
-                print("\033[H\033[J", end="")
-                display_follower_stats(stats)
-                if show_posts:
-                    display_post_stats(stats)
-
-                if plot_mode:
-                    plot_daily_gains(account_name)
-
-            if not refresh_mode:
-                break
-
-            time.sleep(interval)
-
     except FileNotFoundError:
-        print(f"{Fore.RED}Error: The file '{account_name}_stats.csv' was not found.")
+        print(f"{Fore.RED}Error: The file '{args.account_name}_stats.csv' was not found.")
     except ValueError as e:
         print(f"{Fore.RED}Error: {str(e)}")
     except KeyboardInterrupt:
