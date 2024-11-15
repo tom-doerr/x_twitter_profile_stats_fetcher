@@ -121,8 +121,8 @@ def display_post_stats(stats):
 def parse_args():
     parser = argparse.ArgumentParser(description='Calculate and display follower growth statistics')
     parser.add_argument('account_name', help='Name of the account to analyze')
-    parser.add_argument('--refresh', type=int, metavar='SECONDS', nargs='?', const=60,
-                      help='Enable refresh mode with optional interval in seconds (default: 60)')
+    parser.add_argument('--refresh', type=int, metavar='SECONDS', nargs='?', const=10,
+                      help='Enable refresh mode with optional interval in seconds (default: 10)')
     parser.add_argument('--plot', action='store_true',
                       help='Enable plotting of daily gains')
     parser.add_argument('--posts', action='store_true',
