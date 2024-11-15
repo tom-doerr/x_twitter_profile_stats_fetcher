@@ -3,6 +3,7 @@
 import csv
 import sys
 import time
+import argparse
 from datetime import datetime, timedelta
 from colorama import init, Fore, Style
 from tabulate import tabulate
@@ -117,22 +118,40 @@ def display_post_stats(stats):
     table = tabulate(table_data, headers="firstrow", tablefmt="fancy_grid")
     print(f"{Fore.CYAN}{table}")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Calculate and display follower growth statistics')
+    parser.add_argument('account_name', help='Name of the account to analyze')
+    parser.add_argument('--refresh', type=int, metavar='SECONDS', nargs='?', const=60,
+                      help='Enable refresh mode with optional interval in seconds (default: 60)')
+    parser.add_argument('--plot', action='store_true',
+                      help='Enable plotting of daily gains')
+    parser.add_argument('--posts', action='store_true',
+                      help='Show post statistics')
+    return parser.parse_args()
+
 def main():
-    if len(sys.argv) < 2 or len(sys.argv) > 6:
-        print(f"Usage: python {sys.argv[0]} <account_name> [--refresh] [interval_seconds] [--plot] [--posts]")
-        sys.exit(1)
+    args = parse_args()
+    
+    try:
+        while True:
+            stats = calculate_growth_stats(args.account_name)
 
-    account_name = sys.argv[1]
-    refresh_mode = "--refresh" in sys.argv
-    plot_mode = "--plot" in sys.argv
-    show_posts = "--posts" in sys.argv
-    interval = 60  # Default interval
+            if stats is None:
+                print(f"{Fore.RED}Not enough data to calculate growth statistics.")
+            else:
+                # Clear the console (works for both Windows and Unix-like systems)
+                print("\033[H\033[J", end="")
+                display_follower_stats(stats)
+                if args.posts:
+                    display_post_stats(stats)
 
-    if refresh_mode and len(sys.argv) >= 4:
-        try:
-            interval = int(sys.argv[sys.argv.index("--refresh") + 1])
-        except (ValueError, IndexError):
-            print(f"{Fore.RED}Error: Invalid interval. Using default of 60 seconds.")
+                if args.plot:
+                    plot_daily_gains(args.account_name)
+
+            if args.refresh is None:
+                break
+
+            time.sleep(args.refresh)
 
     try:
         while True:
