@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Plot followers and posts over time from a CSV file.')
     parser.add_argument('file_path', type=str, help='Path to the CSV file containing the data')
-    parser.add_argument('--history_days', type=int, default=7, help='Number of days of history to plot (default: 7)')
+    parser.add_argument('--history_days', type=float, default=7, help='Number of days of history to plot (default: 7)')
     parser.add_argument('--refresh_interval', type=int, default=0, help='Refresh interval in seconds (default: 0, no refresh)')
     args = parser.parse_args()
     
