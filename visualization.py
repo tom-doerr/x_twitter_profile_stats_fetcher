@@ -23,6 +23,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
     filtered_df = df[df['datetime'] >= cutoff_date]
     
+    followers_per_post_values = []
     # Calculate followers gained per post for each day within the window
     for i in range(len(filtered_df) - 1):
         current_date = filtered_df['datetime'].iloc[i]
@@ -35,10 +36,13 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
             
             if posts_made > 0 and followers_gained >= 0:
                 followers_per_post = followers_gained / posts_made
+                followers_per_post_values.append(followers_per_post)
                 print(f"Date: {current_date.strftime('%Y-%m-%d')}, Followers gained: {followers_gained}, Posts made: {int(posts_made)}, Followers gained per post: {followers_per_post:.1f}")
             else:
+                followers_per_post_values.append(0)
                 print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
         else:
+            followers_per_post_values.append(0)
             print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
     
     
@@ -73,7 +77,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     
     # Plot followers gained per post on tertiary y-axis
     color3 = '#FF5733'  # Custom color for followers gained per post
-    ax3.plot(filtered_df['datetime'], [followers_per_post] * len(filtered_df['datetime']), color=color3, linewidth=2, label='Followers Gained per Post')
+    ax3.plot(filtered_df['datetime'], followers_per_post_values, color=color3, linewidth=2, label='Followers Gained per Post')
     ax3.set_ylabel('Followers Gained per Post', color=color3)
     ax3.tick_params(axis='y', labelcolor=color3)
     
