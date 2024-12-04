@@ -41,8 +41,6 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
                 followers_per_post_values.append(0)
                 while len(followers_per_post_values) < len(filtered_df):
                     followers_per_post_values.append(0)
-                if len(followers_per_post_values) < len(filtered_df):
-                    followers_per_post_values.append(0)
         else:
             followers_per_post_values.append(0)
     
