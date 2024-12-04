@@ -26,7 +26,8 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     print(f"Length of filtered_df: {len(filtered_df)}")
     print(f"Length of df: {len(df)}")
     
-    followers_per_post_values = []
+    followers_per_post_values = [0] * len(filtered_df)  # Initialize with zeros
+    
     # Calculate followers gained per post for each day within the window
     for i in range(len(filtered_df) - 1):
         current_date = filtered_df['datetime'].iloc[i]
@@ -39,16 +40,11 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
             
             if posts_made > 0 and followers_gained >= 0:
                 followers_per_post = followers_gained / posts_made
-                followers_per_post_values.append(followers_per_post)
+                followers_per_post_values[i] = followers_per_post  # Assign value at correct index
             else:
-                followers_per_post_values.append(0)
-                while len(followers_per_post_values) < len(filtered_df):
-                    followers_per_post_values.append(0)
-                print(f"Length of followers_per_post_values: {len(followers_per_post_values)}")
-                print(f"Length of filtered_df: {len(filtered_df)}")
-                print(f"Length of window_df: {len(window_df)}")
+                followers_per_post_values[i] = 0  # Assign zero at correct index
         else:
-            followers_per_post_values.append(0)
+            followers_per_post_values[i] = 0  # Assign zero at correct index
     
     
     # Plot followers on primary y-axis
