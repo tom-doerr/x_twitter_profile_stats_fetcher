@@ -25,14 +25,21 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     
     # Calculate followers gained per post for each day within the window
     for i in range(len(filtered_df) - 1):
-        followers_gained = filtered_df['followers'].iloc[i + 1] - filtered_df['followers'].iloc[i]
-        posts_made = filtered_df['posts'].iloc[i + 1] - filtered_df['posts'].iloc[i]
+        current_date = filtered_df['datetime'].iloc[i]
+        window_end_date = current_date + pd.Timedelta(days=args.window_size)
+        window_df = filtered_df[(filtered_df['datetime'] > current_date) & (filtered_df['datetime'] <= window_end_date)]
         
-        if posts_made > 0 and followers_gained >= 0:
-            followers_per_post = followers_gained / posts_made
-            print(f"Date: {filtered_df['datetime'].iloc[i + 1].strftime('%Y-%m-%d')}, Followers gained: {followers_gained}, Posts made: {int(posts_made)}, Followers gained per post: {followers_per_post:.1f}")
+        if len(window_df) > 1:
+            followers_gained = window_df['followers'].iloc[-1] - window_df['followers'].iloc[0]
+            posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
+            
+            if posts_made > 0 and followers_gained >= 0:
+                followers_per_post = followers_gained / posts_made
+                print(f"Date: {current_date.strftime('%Y-%m-%d')}, Followers gained: {followers_gained}, Posts made: {int(posts_made)}, Followers gained per post: {followers_per_post:.1f}")
+            else:
+                print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
         else:
-            print(f"Date: {filtered_df['datetime'].iloc[i + 1].strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
+            print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
     
     
     # Plot followers on primary y-axis
