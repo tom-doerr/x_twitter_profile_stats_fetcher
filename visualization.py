@@ -27,6 +27,8 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     print(f"Length of df: {len(df)}")
     
     followers_per_post_values = []  # Initialize as an empty list
+    followers_gained_list = []  # Initialize as an empty list
+    posts_made_list = []  # Initialize as an empty list
     
     # Calculate followers gained per post for each day within the window
     for i in range(len(filtered_df) - 1):
@@ -39,12 +41,22 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
             posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
             
             if posts_made > 0 and followers_gained >= 0:
-                followers_per_post = followers_gained / posts_made
-                followers_per_post_values.append(followers_per_post)  # Append value at correct index
+                followers_gained_list.append(followers_gained)
+                posts_made_list.append(posts_made)
             else:
-                followers_per_post_values.append(0)  # Append zero at correct index
+                followers_gained_list.append(0)
+                posts_made_list.append(0)
         else:
-            followers_per_post_values.append(0)  # Append zero at correct index
+            followers_gained_list.append(0)
+            posts_made_list.append(0)
+    
+    # Calculate followers gained per post for each window
+    for i in range(len(followers_gained_list)):
+        if posts_made_list[i] > 0:
+            followers_per_post = followers_gained_list[i] / posts_made_list[i]
+            followers_per_post_values.append(followers_per_post)
+        else:
+            followers_per_post_values.append(0)
     
     
     # Plot followers on primary y-axis
@@ -75,7 +87,8 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
         print("Not enough data to calculate followers per post for this period")
     
     # Ensure the length of followers_per_post_values matches filtered_df
-    followers_per_post_values.append(0)  # Append one more zero to match the length
+    while len(followers_per_post_values) < len(filtered_df):
+        followers_per_post_values.append(0)  # Append zeros to match the length
     
     # Plot followers gained per post on tertiary y-axis
     color3 = '#FF5733'  # Custom color for followers gained per post
