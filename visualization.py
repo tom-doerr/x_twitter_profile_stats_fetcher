@@ -23,6 +23,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     cutoff_date = df['datetime'].max() - pd.Timedelta(days=history_days)
     filtered_df = df[df['datetime'] >= cutoff_date]
     print(f"Length of filtered_df['datetime']: {len(filtered_df['datetime'])}")
+    print(f"Length of filtered_df: {len(filtered_df)}")
     
     followers_per_post_values = []
     # Calculate followers gained per post for each day within the window
@@ -43,6 +44,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
                 while len(followers_per_post_values) < len(filtered_df):
                     followers_per_post_values.append(0)
                 print(f"Length of followers_per_post_values: {len(followers_per_post_values)}")
+                print(f"Length of filtered_df: {len(filtered_df)}")
         else:
             followers_per_post_values.append(0)
     
