@@ -43,6 +43,8 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
                 print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
                 if len(followers_per_post_values) < len(filtered_df):
                     followers_per_post_values.append(0)
+                if len(followers_per_post_values) < len(filtered_df):
+                    followers_per_post_values.append(0)
         else:
             followers_per_post_values.append(0)
             print(f"Date: {current_date.strftime('%Y-%m-%d')}, Not enough data to calculate followers per post for this day")
