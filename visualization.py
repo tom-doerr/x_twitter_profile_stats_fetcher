@@ -6,6 +6,7 @@ import argparse
 import time
 from datetime import datetime
 from matplotlib.animation import FuncAnimation
+from tqdm import tqdm
 
 def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     # Clear the axes
