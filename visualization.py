@@ -31,18 +31,94 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     posts_made_list = []  # Initialize as an empty list
     
     # Calculate followers gained per post for each day within the window
+#    for i in range(len(filtered_df) - 1):
+#        current_date = filtered_df['datetime'].iloc[i]
+#        print("current_date:", current_date)
+#        # window_end_date = current_date + pd.Timedelta(days=args.window_size)
+#        window_end_date = current_date + pd.Timedelta(days=args.window_size/2)
+#        print("window_end_date:", window_end_date)
+#        window_start_date = current_date - pd.Timedelta(days=args.window_size/2)
+#        print("window_start_date:", window_start_date)
+#        nearest_start_date = filtered_df['datetime'].iloc[(filtered_df['datetime']-current_date).abs().argsort()[:1]]
+#        print("nearest_start_date:", nearest_start_date)
+#        nearest_end_date = filtered_df['datetime'].iloc[(filtered_df['datetime']-window_end_date).abs().argsort()[:1]]
+#        print("nearest_end_date:", nearest_end_date)
+#
+#        # window_df = filtered_df[(filtered_df['datetime'] > current_date) & (filtered_df['datetime'] <= window_end_date)]
+#        
+#        # if len(window_df) > 1:
+#        # if nearest_start_date < nearest_end_date:
+#        if True:
+#            # followers_gained = window_df['followers'].iloc[-1] - window_df['followers'].iloc[0]
+#            # followers_gained = filtered_df['followers'].iloc[filtered_df['datetime'] == nearest_end_date].values[0] - filtered_df['followers'].iloc[filtered_df['datetime'] == nearest_start_date].values[0]
+#            # If nearest_start_date is a Series with a single value, get the first value
+#            nearest_start_date = nearest_start_date.iloc[0]
+#
+## Then use it in your comparison
+#            index_start = filtered_df.index[filtered_df['datetime'] == nearest_start_date].tolist()[0]
+#            # really just index
+#
+#            # a = filtered_df.index[filtered_df['datetime'] == nearest_start_date].tolist()
+#            # index_start = a[0]
+#            # nearest_end_date = nearest_end_date.iloc[0]
+#            index_end = filtered_df.index[filtered_df['datetime'] == nearest_end_date].tolist()[0]
+#            # followers_start = filtered_df['followers'].iloc[filtered_df['datetime'] == nearest_start_date].values[0]
+#            #check if index is in the list
+#            # if index_start  in filtered_df.index:
+#            print("len(filtered_df):", len(filtered_df))
+#            print("index_start:", index_start)
+#            if index_start + 1 < len(filtered_df):
+#                #check for out of bounds
+#                followers_start = filtered_df['followers'].iloc[index_start]
+#                print("followers_start:", followers_start)
+#                # followers_end = filtered_df['followers'].iloc[filtered_df['datetime'] == nearest_end_date].values[0]
+#                # followers_end = filtered_df['followers'].iloc[filtered_df['datetime'] == nearest_end_date].values[0]
+#                followers_end = filtered_df['followers'].iloc[index_end]
+#                print("followers_end:", followers_end)
+#                # posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
+#                # posts_made = filtered_df['posts'].iloc[index_end] - filtered_df['posts'].iloc[index_start]
+#                posts_start = filtered_df['posts'].iloc[index_start]
+#                print("posts_start:", posts_start)
+#                posts_end = filtered_df['posts'].iloc[index_end]
+#                print("posts_end:", posts_end)
+#                posts_made = posts_end - posts_start
+#                followers_gained = followers_end - followers_start
+#                print("followers_gained:", followers_gained)
+#            else:
+#                followers_gained = 0
+#                posts_made = 0.00001
+#            
+#            if posts_made > 0 and followers_gained >= 0:
+#                followers_gained_list.append(followers_gained)
+#                print("followers_gained:", followers_gained)
+#                posts_made_list.append(posts_made)
+#                print("posts_made:", posts_made)
     for i in range(len(filtered_df) - 1):
         current_date = filtered_df['datetime'].iloc[i]
-        window_end_date = current_date + pd.Timedelta(days=args.window_size)
-        window_df = filtered_df[(filtered_df['datetime'] > current_date) & (filtered_df['datetime'] <= window_end_date)]
+        window_end_date = current_date + pd.Timedelta(days=args.window_size/2)
+        window_start_date = current_date - pd.Timedelta(days=args.window_size/2)
         
-        if len(window_df) > 1:
+        # Instead of finding nearest dates and then finding their indices again,
+        # directly use the window boundaries to filter data
+        window_df = filtered_df[
+            (filtered_df['datetime'] >= window_start_date) & 
+            (filtered_df['datetime'] <= window_end_date)
+        ]
+        
+        if len(window_df) > 1:  # Make sure we have at least 2 points to calculate difference
             followers_gained = window_df['followers'].iloc[-1] - window_df['followers'].iloc[0]
             posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
             
             if posts_made > 0 and followers_gained >= 0:
                 followers_gained_list.append(followers_gained)
                 posts_made_list.append(posts_made)
+                theoretical_followers_per_post = followers_gained / posts_made
+                # result float
+                # theoretical_followers_per_post = float(followers_gained) / float(posts_made)
+
+
+                print("theoretical_followers_per_post:", theoretical_followers_per_post)
+                print()
             else:
                 followers_gained_list.append(0)
                 posts_made_list.append(0)
