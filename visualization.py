@@ -145,10 +145,11 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     ax1.set_ylabel('Followers', color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     
-    # Format x-axis to show dates and times more clearly
-    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d\n%H:%M'))
+    # Format x-axis to show just the day of the month
+    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d'))
     ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
-    ax1.xaxis.set_minor_locator(plt.matplotlib.dates.HourLocator(byhour=[6, 12, 18]))
+    # Remove minor ticks since we're only showing days
+    ax1.xaxis.set_minor_locator(plt.NullLocator())
     
     # Plot posts on secondary y-axis
     color2 = '#17BF63'  # Twitter green
