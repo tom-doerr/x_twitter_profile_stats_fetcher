@@ -165,17 +165,24 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     while len(followers_per_post_values) < len(filtered_df):
         followers_per_post_values.append(0)  # Append zeros to match the length
     
-    # Plot followers gained per post on tertiary y-axis
-    color3 = '#FF5733'  # Custom color for followers gained per post
-    ax3.plot(filtered_df['datetime'], followers_per_post_values, color=color3, linewidth=2, label='Followers Gained per Post')
-    ax3.set_ylabel('Followers Gained per Post', color=color3)
-    ax3.tick_params(axis='y', labelcolor=color3)
-    
-    # Add legends for all axes
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    lines3, labels3 = ax3.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2 + lines3, labels1 + labels2 + labels3, loc='upper left')
+    # Only plot followers gained per post if enabled
+    if args.show_followers_per_post:
+        # Plot followers gained per post on tertiary y-axis
+        color3 = '#FF5733'  # Custom color for followers gained per post
+        ax3.plot(filtered_df['datetime'], followers_per_post_values, color=color3, linewidth=2, label='Followers Gained per Post')
+        ax3.set_ylabel('Followers Gained per Post', color=color3)
+        ax3.tick_params(axis='y', labelcolor=color3)
+        
+        # Add legends for all axes
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        lines3, labels3 = ax3.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2 + lines3, labels1 + labels2 + labels3, loc='upper left')
+    else:
+        # Add legends for primary and secondary axes only
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
     
     # Update the plot
     plt.xticks(rotation=45)
@@ -188,13 +195,18 @@ if __name__ == "__main__":
     parser.add_argument('--history_days', type=float, default=7, help='Number of days of history to plot (default: 7)')
     parser.add_argument('--window_size', type=int, default=7, help='Window size in days for computing followers gained per post (default: 7)')
     parser.add_argument('--refresh_interval', type=int, default=0, help='Refresh interval in seconds (default: 0, no refresh)')
+    parser.add_argument('--show-followers-per-post', action='store_true', 
+                       help='Enable followers gained per post visualization (default: False)')
     args = parser.parse_args()
     
-    # Create figure with three y-axes
+    # Create figure with primary and secondary y-axes
     fig, ax1 = plt.subplots(figsize=(10, 5))
     ax2 = ax1.twinx()
-    ax3 = ax1.twinx()
-    ax3.spines['right'].set_position(('outward', 60))
+    
+    # Only create tertiary axis if followers-per-post visualization is enabled
+    if args.show_followers_per_post:
+        ax3 = ax1.twinx()
+        ax3.spines['right'].set_position(('outward', 60))
 
     def update(frame):
         plot_followers_and_posts(args.file_path, args.history_days, fig, ax1, ax2)
