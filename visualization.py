@@ -94,46 +94,50 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
 #                print("followers_gained:", followers_gained)
 #                posts_made_list.append(posts_made)
 #                print("posts_made:", posts_made)
-    for i in tqdm(range(len(filtered_df) - 1), desc="Processing data"):
-        current_date = filtered_df['datetime'].iloc[i]
-        window_end_date = current_date + pd.Timedelta(days=args.window_size/2)
-        window_start_date = current_date - pd.Timedelta(days=args.window_size/2)
+    # Only calculate followers-per-post metrics if the flag is set
+    if args.show_followers_per_post:
+        followers_per_post_values = []  # Initialize as an empty list
+        followers_gained_list = []  # Initialize as an empty list
+        posts_made_list = []  # Initialize as an empty list
         
-        # Instead of finding nearest dates and then finding their indices again,
-        # directly use the window boundaries to filter data
-        window_df = filtered_df[
-            (filtered_df['datetime'] >= window_start_date) & 
-            (filtered_df['datetime'] <= window_end_date)
-        ]
-        
-        if len(window_df) > 1:  # Make sure we have at least 2 points to calculate difference
-            followers_gained = window_df['followers'].iloc[-1] - window_df['followers'].iloc[0]
-            posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
+        # Calculate followers gained per post for each day within the window
+        for i in tqdm(range(len(filtered_df) - 1), desc="Processing data"):
+            current_date = filtered_df['datetime'].iloc[i]
+            window_end_date = current_date + pd.Timedelta(days=args.window_size/2)
+            window_start_date = current_date - pd.Timedelta(days=args.window_size/2)
             
-            if posts_made > 0 and followers_gained >= 0:
-                followers_gained_list.append(followers_gained)
-                posts_made_list.append(posts_made)
-                theoretical_followers_per_post = followers_gained / posts_made
-                # result float
-                # theoretical_followers_per_post = float(followers_gained) / float(posts_made)
-
-
-                print("theoretical_followers_per_post:", theoretical_followers_per_post)
-                print()
+            # Directly use the window boundaries to filter data
+            window_df = filtered_df[
+                (filtered_df['datetime'] >= window_start_date) & 
+                (filtered_df['datetime'] <= window_end_date)
+            ]
+            
+            if len(window_df) > 1:  # Make sure we have at least 2 points to calculate difference
+                followers_gained = window_df['followers'].iloc[-1] - window_df['followers'].iloc[0]
+                posts_made = window_df['posts'].iloc[-1] - window_df['posts'].iloc[0]
+                
+                if posts_made > 0 and followers_gained >= 0:
+                    followers_gained_list.append(followers_gained)
+                    posts_made_list.append(posts_made)
+                    theoretical_followers_per_post = followers_gained / posts_made
+                    print("theoretical_followers_per_post:", theoretical_followers_per_post)
+                    print()
+                else:
+                    followers_gained_list.append(0)
+                    posts_made_list.append(0)
             else:
                 followers_gained_list.append(0)
                 posts_made_list.append(0)
-        else:
-            followers_gained_list.append(0)
-            posts_made_list.append(0)
-    
-    # Calculate followers gained per post for each window
-    for i in tqdm(range(len(followers_gained_list)), desc="Calculating followers per post"):
-        if posts_made_list[i] > 0:
-            followers_per_post = followers_gained_list[i] / posts_made_list[i]
-            followers_per_post_values.append(followers_per_post)
-        else:
-            followers_per_post_values.append(0)
+        
+        # Calculate followers gained per post for each window
+        for i in tqdm(range(len(followers_gained_list)), desc="Calculating followers per post"):
+            if posts_made_list[i] > 0:
+                followers_per_post = followers_gained_list[i] / posts_made_list[i]
+                followers_per_post_values.append(followers_per_post)
+            else:
+                followers_per_post_values.append(0)
+    else:
+        followers_per_post_values = [0] * len(filtered_df)  # Initialize with zeros
     # Plot followers on primary y-axis
     color1 = '#1DA1F2'  # Twitter blue
     ax1.plot(filtered_df['datetime'], filtered_df['followers'], color=color1, linewidth=2, label='Followers')
