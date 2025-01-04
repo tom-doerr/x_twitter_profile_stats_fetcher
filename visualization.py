@@ -151,15 +151,16 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     ax2.set_ylabel('Posts', color=color2)
     ax2.tick_params(axis='y', labelcolor=color2)
     
-    # Calculate followers gained per post over visualization period
-    filtered_followers_gained = filtered_df['followers'].iloc[-1] - filtered_df['followers'].iloc[0]
-    filtered_posts_made = filtered_df['posts'].iloc[-1] - filtered_df['posts'].iloc[0]
-    
-    if filtered_posts_made > 0 and filtered_followers_gained >= 0:
-        followers_per_post = filtered_followers_gained / filtered_posts_made
-        print(f"Followers gained per post: {followers_per_post:.1f}")
-    else:
-        print("Not enough data to calculate followers per post for this period")
+    # Only calculate overall followers per post if the flag is set
+    if args.show_followers_per_post:
+        filtered_followers_gained = filtered_df['followers'].iloc[-1] - filtered_df['followers'].iloc[0]
+        filtered_posts_made = filtered_df['posts'].iloc[-1] - filtered_df['posts'].iloc[0]
+        
+        if filtered_posts_made > 0 and filtered_followers_gained >= 0:
+            followers_per_post = filtered_followers_gained / filtered_posts_made
+            print(f"Followers gained per post: {followers_per_post:.1f}")
+        else:
+            print("Not enough data to calculate followers per post for this period")
     
     # Ensure the length of followers_per_post_values matches filtered_df
     while len(followers_per_post_values) < len(filtered_df):
