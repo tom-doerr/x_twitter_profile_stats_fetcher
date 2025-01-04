@@ -145,8 +145,8 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     ax1.set_ylabel('Followers', color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     
-    # Format x-axis to show just the day of the month
-    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d'))
+    # Format x-axis to show day of month with period (e.g., "1.", "2.")
+    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d.'))
     ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
     # Remove minor ticks since we're only showing days
     ax1.xaxis.set_minor_locator(plt.NullLocator())
