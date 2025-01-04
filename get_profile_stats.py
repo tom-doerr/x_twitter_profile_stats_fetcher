@@ -57,16 +57,35 @@ def initialize_browser(no_headless=False):
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
+    options.add_argument('--remote-debugging-port=9222')
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--disable-extensions')
+    options.add_argument('--disable-infobars')
+    options.add_argument('--disable-notifications')
+    options.add_argument('--disable-popup-blocking')
+    options.add_argument('--disable-web-security')
+    options.add_argument('--disable-logging')
+    options.add_argument('--log-level=3')
+    options.add_argument('--output=/dev/null')
+    
     if not no_headless:
-        options.add_argument('--headless')
+        options.add_argument('--headless=new')  # Use new headless mode
 
     try:
+        # Try with service first
         service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         return driver
     except Exception as e:
-        logger.error(f"Failed to initialize Chrome WebDriver: {e}")
-        return None
+        logger.error(f"Failed to initialize Chrome WebDriver with service: {e}")
+        try:
+            # Fall back to direct executable path
+            driver = webdriver.Chrome(options=options)
+            return driver
+        except Exception as e:
+            logger.error(f"Failed to initialize Chrome WebDriver: {e}")
+            logger.error(traceback.format_exc())
+            return None
 
 def get_profile_stats(driver, url):
     """Fetch profile stats from X/Twitter profile."""
