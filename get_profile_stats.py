@@ -55,74 +55,30 @@ def initialize_browser(no_headless=False):
     """Initialize and return a Chrome WebDriver instance."""
     options = webdriver.ChromeOptions()
     
-    # Set explicit Chrome binary path
-    chrome_path = shutil.which('google-chrome') or shutil.which('chrome') or shutil.which('chromium')
-    if chrome_path:
-        options.binary_location = chrome_path
-    
-    # Common options
-    options.add_argument('--disable-gpu')
+    # Essential options for stability
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--window-size=1920,1080')
-    options.add_argument('--remote-debugging-port=9222')
     options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_argument('--disable-extensions')
-    options.add_argument('--disable-infobars')
-    options.add_argument('--disable-notifications')
-    options.add_argument('--disable-popup-blocking')
-    options.add_argument('--disable-web-security')
-    options.add_argument('--disable-logging')
-    options.add_argument('--log-level=3')
-    options.add_argument('--output=/dev/null')
-    options.add_argument('--disable-software-rasterizer')
-    options.add_argument('--disable-background-networking')
-    options.add_argument('--disable-background-timer-throttling')
-    options.add_argument('--disable-breakpad')
-    options.add_argument('--disable-component-update')
-    options.add_argument('--disable-domain-reliability')
-    options.add_argument('--disable-sync')
-    options.add_argument('--metrics-recording-only')
-    options.add_argument('--no-first-run')
-    options.add_argument('--safebrowsing-disable-auto-update')
-    options.add_argument('--disable-client-side-phishing-detection')
     
     if not no_headless:
         options.add_argument('--headless=new')  # Use new headless mode
 
-    max_attempts = 3
-    attempt = 0
-    
-    while attempt < max_attempts:
-        attempt += 1
-        try:
-            # Try with service first
-            service = ChromeService(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
-            
-            # Verify connection
-            driver.get('about:blank')
-            if driver.title == '':
-                return driver
-            else:
-                driver.quit()
-                logger.warning(f"Driver verification failed, attempt {attempt}/{max_attempts}")
-                
-        except Exception as e:
-            logger.error(f"Attempt {attempt}/{max_attempts} failed: {str(e)}")
-            if attempt < max_attempts:
-                time.sleep(2)  # Wait before retrying
-                continue
-            
-            # Final fallback attempt without service
-            try:
-                logger.info("Trying direct ChromeDriver initialization...")
-                driver = webdriver.Chrome(options=options)
-                return driver
-            except Exception as e:
-                logger.error(f"Final attempt failed: {str(e)}")
-                logger.error(traceback.format_exc())
-                return None
+    try:
+        # Use WebDriverManager to handle driver installation
+        service = ChromeService(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
+        
+        # Quick test to verify connection
+        driver.get('about:blank')
+        if driver.title == '':
+            return driver
+        driver.quit()
+        return None
+    except Exception as e:
+        logger.error(f"Failed to initialize Chrome WebDriver: {str(e)}")
+        logger.error(traceback.format_exc())
+        return None
 
 def get_profile_stats(driver, url):
     """Fetch profile stats from X/Twitter profile."""
