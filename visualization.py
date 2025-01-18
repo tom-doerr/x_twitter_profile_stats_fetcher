@@ -145,11 +145,24 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     ax1.set_ylabel('Followers', color=color1)
     ax1.tick_params(axis='y', labelcolor=color1)
     
-    # Format x-axis to show day of month with period (e.g., "1.", "2.")
-    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%d.'))
-    ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
-    # Remove minor ticks since we're only showing days
-    ax1.xaxis.set_minor_locator(plt.NullLocator())
+    # Calculate time range of data
+    time_range = filtered_df['datetime'].max() - filtered_df['datetime'].min()
+    
+    # If time range is less than 2 days, show hours and minutes
+    if time_range <= pd.Timedelta(days=2):
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d %H:%M'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(interval=2))
+        ax1.xaxis.set_minor_locator(plt.matplotlib.dates.MinuteLocator(interval=30))
+    # If time range is between 2 days and 1 week, show dates and hours
+    elif time_range <= pd.Timedelta(days=7):
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d %H:00'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
+        ax1.xaxis.set_minor_locator(plt.matplotlib.dates.HourLocator(interval=6))
+    # For longer ranges, show just dates
+    else:
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
+        ax1.xaxis.set_minor_locator(plt.NullLocator())
     
     # Plot posts on secondary y-axis
     color2 = '#17BF63'  # Twitter green
