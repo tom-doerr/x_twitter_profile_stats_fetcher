@@ -60,12 +60,17 @@ def calculate_growth_stats(account_name):
         post_growth_rate = post_diff / time_diff
         return int(fol_diff), fol_growth_rate, int(post_diff), post_growth_rate
 
+    ten_min_fol_diff, ten_min_fol_rate, ten_min_post_diff, ten_min_post_rate = calculate_stats(10/60)  # 10 minutes
     hourly_fol_diff, hourly_fol_rate, hourly_post_diff, hourly_post_rate = calculate_stats(1)
     six_hour_fol_diff, six_hour_fol_rate, six_hour_post_diff, six_hour_post_rate = calculate_stats(6)
     daily_fol_diff, daily_fol_rate, daily_post_diff, daily_post_rate = calculate_stats(24)
     weekly_fol_diff, weekly_fol_rate, weekly_post_diff, weekly_post_rate = calculate_stats(24 * 7)
 
     return {
+        'ten_min': {
+            'fol_diff': ten_min_fol_diff, 'fol_rate': ten_min_fol_rate,
+            'post_diff': ten_min_post_diff, 'post_rate': ten_min_post_rate
+        },
         'current_time': current_time,
         'current_fol': current_fol,
         'current_posts': current_posts,
@@ -94,6 +99,7 @@ def display_follower_stats(stats):
 
     table_data = [
         ["Period", "NF", "   GR day", "   GR week"],
+        ["10-min", f"{Fore.YELLOW}{stats['ten_min']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['ten_min']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['ten_min']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
         ["1-hour", f"{Fore.YELLOW}{stats['hourly']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
         ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
         ["24-hour", f"{Fore.YELLOW}{stats['daily']['fol_diff']:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['fol_rate']):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['fol_rate'] * 7):>10,}{Fore.CYAN}"],
@@ -109,6 +115,7 @@ def display_post_stats(stats):
 
     table_data = [
         ["Period", "NP", "   GR day", "   GR week"],
+        ["10-min", f"{Fore.YELLOW}{stats['ten_min']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['ten_min']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['ten_min']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
         ["1-hour", f"{Fore.YELLOW}{stats['hourly']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['hourly']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['hourly']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
         ["6-hour", f"{Fore.YELLOW}{stats['six_hour']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['six_hour']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['six_hour']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
         ["24-hour", f"{Fore.YELLOW}{stats['daily']['post_diff'] or 0:,}{Fore.CYAN}", f"{Fore.YELLOW}{int(stats['daily']['post_rate'] or 0):>10,}{Fore.CYAN}", f"{Fore.YELLOW}{int((stats['daily']['post_rate'] or 0) * 7):>10,}{Fore.CYAN}"],
