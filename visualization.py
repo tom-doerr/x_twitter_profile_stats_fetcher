@@ -148,21 +148,26 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     # Calculate time range of data
     time_range = filtered_df['datetime'].max() - filtered_df['datetime'].min()
     
-    # If time range is less than 2 days, show hours and minutes
+    # Adjust date formatting based on time range
     if time_range <= pd.Timedelta(days=2):
+        # For 2 days or less, show every 6 hours
         ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d %H:%M'))
-        ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(interval=2))
-        ax1.xaxis.set_minor_locator(plt.matplotlib.dates.MinuteLocator(interval=30))
-    # If time range is between 2 days and 1 week, show dates and hours
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(interval=6))
     elif time_range <= pd.Timedelta(days=7):
-        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d %H:00'))
-        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
-        ax1.xaxis.set_minor_locator(plt.matplotlib.dates.HourLocator(interval=6))
-    # For longer ranges, show just dates
-    else:
+        # For 2-7 days, show one label per day
         ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
         ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
-        ax1.xaxis.set_minor_locator(plt.NullLocator())
+    elif time_range <= pd.Timedelta(days=14):
+        # For 7-14 days, show every other day
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=2))
+    else:
+        # For longer periods, show every 3 days
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=3))
+    
+    # Remove minor ticks
+    ax1.xaxis.set_minor_locator(plt.matplotlib.dates.NullLocator())
     
     # Plot posts on secondary y-axis
     color2 = '#17BF63'  # Twitter green
