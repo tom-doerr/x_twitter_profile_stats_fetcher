@@ -150,21 +150,25 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
     
     # Adjust date formatting based on time range
     if time_range <= pd.Timedelta(days=2):
-        # For 2 days or less, show every 6 hours
+        # For 2 days or less, show every 12 hours
         ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d %H:%M'))
-        ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(interval=6))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.HourLocator(interval=12))
     elif time_range <= pd.Timedelta(days=7):
-        # For 2-7 days, show one label per day
-        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
-        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=1))
-    elif time_range <= pd.Timedelta(days=14):
-        # For 7-14 days, show every other day
+        # For 2-7 days, show every other day
         ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
         ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=2))
-    else:
-        # For longer periods, show every 3 days
+    elif time_range <= pd.Timedelta(days=30):
+        # For 7-30 days, show every 4 days
         ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
-        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=3))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=4))
+    elif time_range <= pd.Timedelta(days=90):
+        # For 30-90 days, show every week
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=7))
+    else:
+        # For longer periods, show every 2 weeks
+        ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%m-%d'))
+        ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=14))
     
     # Remove minor ticks
     ax1.xaxis.set_minor_locator(plt.NullLocator())
