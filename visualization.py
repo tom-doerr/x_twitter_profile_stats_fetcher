@@ -167,7 +167,7 @@ def plot_followers_and_posts(file_path, history_days, fig, ax1, ax2):
         ax1.xaxis.set_major_locator(plt.matplotlib.dates.DayLocator(interval=3))
     
     # Remove minor ticks
-    ax1.xaxis.set_minor_locator(plt.matplotlib.dates.NullLocator())
+    ax1.xaxis.set_minor_locator(plt.NullLocator())
     
     # Plot posts on secondary y-axis
     color2 = '#17BF63'  # Twitter green
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         
     if args.refresh_interval > 0:
         # Create animation that updates every refresh_interval milliseconds
-        ani = FuncAnimation(fig, update, interval=args.refresh_interval * 1000)
+        ani = FuncAnimation(fig, update, interval=args.refresh_interval * 1000, save_count=100)
         
     plot_followers_and_posts(args.file_path, args.history_days, fig, ax1, ax2)
     plt.show()
